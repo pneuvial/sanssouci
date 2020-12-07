@@ -2,16 +2,20 @@
 % Please edit documentation in R/f_hat.R
 \name{f1x_hat}
 \alias{f1x_hat}
-\title{Title}
+\title{Naive f1 estimate}
 \usage{
 f1x_hat(f0x, f_hatx, pi0_hat)
 }
 \arguments{
-\item{pi0_hat}{}
+\item{f0x}{numeric vector.  The value of the density for the different obersvation under the null hypothesis.}
+
+\item{f_hatx}{numeric vector.  The value of the estimated density of the different obersvation.}
+
+\item{pi0_hat}{numeric, the estimated proportion of the null hypothesis.}
 }
 \value{
-
+numeric vector.  The value of the estimated density for the different obersvation under the alternatives.
 }
 \description{
-Title
+Naive f1 estimate
 }

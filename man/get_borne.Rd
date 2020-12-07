@@ -7,7 +7,9 @@
 get_borne(B, alpha)
 }
 \arguments{
-\item{alpha}{}
+\item{B}{the matrix defined in the paper}
+
+\item{alpha}{the levels}
 }
 \value{
 

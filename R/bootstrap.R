@@ -1,0 +1,156 @@
+## Bootstrap
+
+
+#' Title
+#'
+#' @param A_est 
+#' @param Pi_est 
+#' @param x_from 
+#' @param prob1 
+#' @param h 
+#' @param Sel_from 
+#' @param al 
+#' @param seuil 
+#' @param min_size 
+#' @param num_b 
+#' @param n 
+#' @param max_pi0 
+#' @param m0_init 
+#' @param sd0_init 
+#' @param df_init 
+#' @param norm_init 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+boots_param <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, al,
+                        seuil, min_size, num_b, n,  max_pi0, m0_init, sd0_init, df_init, norm_init, type_init){
+  Sel_from <- Sel_from %>% rename(Sel_from = Sel)
+  m <- length(x_from)
+  Data_temp <- sim_hmm_from_weightkde( A_est,  Pi_est,  x_from, prob1, h, n )
+  theta <- Data_temp$theta 
+  x <- Data_temp$x  
+  if(norm_init){
+    pval <- 2 * (1 - pnorm(abs(x), m0_init, sd0_init))
+  }else{
+    pval <- 2 * (1 - pt(abs(x), df_init)) 
+  }
+  
+  
+  if(type_init == "locfdr"){
+    w <- locfdr(x)
+    m0_init <- w$fp0[3,1]
+    sd0_init <-  w$fp0[3,2]
+    norm_init <- TRUE 
+  }
+  
+  
+  f0x  <-sapply(x, function(xi){
+    sum(K((x_from -xi)/h) * (1-prob1)) / sum(h *(1- prob1))
+  })
+  f1x  <-sapply(x, function(xi){
+    sum(K((x_from -xi)/h) * prob1) / sum(h * prob1)
+  })
+  ## oracle boot 
+  fw_bc_or_star <- for_back(m, A_est, f0x, f1x, Pi_est)
+  Pis_or_star <- lapply(2:m, function(i){
+    get_A( m,alpha = fw_bc_or_star$alpha, beta = fw_bc_or_star$beta,
+           A_est, f0x, f1x, i = i)
+  } )
+  
+  ## est boot
+  f0x_est_star <- dnorm(x, m0_init, sd0_init)
+  pi0_hat <- max(min(sum(pval > 0.8) / (m * 0.2), max_pi0 ), 0.6)
+  f_hatx <- x %>%
+    map_dbl( ~f_hatK(x, ., h = h,K) )
+  f1x_est_star <-  f1x_hat(f0x_est_star, f_hatx, pi0_hat)
+  f1x_est_star[f1x_est_star <= 0] <- min(f0x_est_star)
+  mini <- max(0.6, ((1 + max_pi0) * pi0_hat -max_pi0) / pi0_hat)
+  a <-runif(1, mini, max_pi0)
+  b <- 1 - a
+  c <- pi0_hat * b / (1 - pi0_hat)
+  d <- 1 - c
+  
+  if(max(c(a,b,c,d))> 1 ){ stop("Pb de A init (boot)")}
+  
+  
+  Em <- Em_tot_01(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
+                  Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est_star, f1x = f1x_est_star,
+                  x, eps = 0.0001,
+                  maxit =1000, h = h)
+  if(Em$A[1,1] > Em$A[2,2]){ 
+    A_est_star <- Em$A
+    Pi_est_sar <-Em$Pi[,1]
+    f1x_est_star <- Em$f1x
+    f0x_est_star <- Em$f0x
+    fw_bc_EM_star <- Em$fw_bc_EM
+  }else{ 
+    A_est_star <- Em$A[2:1,2:1]
+    Pi_est_sar <-Em$Pi[2:1,1]
+    f0x_est_star <- Em$f1x
+    f1x_est_star <- Em$f0x
+    fw_bc_EM_star <- for_back(m, A_est_star,f0x_est_star, f1x_est_star, Pi_est_sar)
+  }
+  
+  Pis_est_star <- lapply(2:m, function(i){
+    get_A( m,alpha = fw_bc_EM_star$alpha, beta = fw_bc_EM_star$beta, 
+           A_est_star, f0x_est_star, f1x_est_star, i = i)
+  })
+  
+  gamma_EM_star1 <- fw_bc_EM_star$gamma[,2]
+  gamma_EM_star0 <- fw_bc_EM_star$gamma[,1]
+  
+  
+  f1x_from  <-sapply(x_from, function(xi){
+    sum(K((x -xi)/h) * gamma_EM_star1) / sum(h * gamma_EM_star1)
+  })
+  f0x_from  <-sapply(x_from, function(xi){
+    sum(K((x -xi)/h) * gamma_EM_star0) / sum(h * gamma_EM_star0)
+  })
+  fw_bc_from <-  for_back(m, A_est_star, f0x_from, f1x_from, Pi_est_sar)
+  Pis_from <- lapply(2:m, function(i){
+    get_A( m,alpha = fw_bc_from$alpha, beta = fw_bc_from$beta, 
+           A_est_star, f0x_from, f1x_from, i = i)
+  })
+  ## selection SC 
+ 
+  Sel <- Selection_tibble(x, fw_bc_EM_star, seuil, A_est_star, f0x_est_star, f1x_est_star, Pi_est_sar, min_size) %>% 
+    rename(Size_boot = Size)
+  
+  Sel_boot <- Sel %>% left_join(Sel_from,  by = "Nom") %>% 
+    mutate(
+      quantile_from = map(Sel_from,~get_quantiles(
+        sel = ., li0 =fw_bc_from$gamma[,1],
+        Pis = Pis_from, f0x = f0x_from, f1x = f1x_from)),
+      quantile_oracle_boot = map(Sel,~get_quantiles(
+        sel = ., li0 =fw_bc_or_star$gamma[,1],
+        Pis = Pis_or_star, f0x = f0x, f1x = f1x)), 
+      quantile_est_boot = map(Sel,~get_quantiles(
+        sel = ., li0 =fw_bc_EM_star$gamma[,1],
+        Pis = Pis_est_star, f0x = f0x_est_star, f1x = f1x_est_star
+      )),
+      V_HMM_oracle_boot_aldemi =  map2_dbl(Sel, quantile_oracle_boot,~borne(
+        type_borne = "HMM", sel = .x, a = .y, alpha = al /2)
+      ),
+      V_HMM_small_oracle_boot_aldemi =  map2_dbl(Sel, quantile_oracle_boot,~borne(
+        type_borne = "HMM_small", sel = .x, a = .y, alpha = al / 2)
+      ),
+      V_HMM_est_boot_aldemi =  map2_dbl(Sel, quantile_est_boot,~borne(
+        type_borne = "HMM", sel = .x, a = .y, alpha = al /2)
+      ),
+      V_HMM_small_est_boot_aldemi =  map2_dbl(Sel, quantile_est_boot,~borne(
+        type_borne = "HMM_small", sel = .x, a = .y, alpha = al /2)
+      ),
+      V_HMM_est_boot_aldemi_samesel =  map2_dbl(Sel_from, quantile_from,~borne(
+        type_borne = "HMM", sel = .x, a = .y, alpha = al /2)
+      ),
+      V_HMM_small_est_boot_aldemi_samesel =  map2_dbl(Sel_from, quantile_from,~borne(
+        type_borne = "HMM_small", sel = .x, a = .y, alpha = al /2)
+      ),
+      Espe = map_dbl(Sel, ~sum(fw_bc_or_star$gamma[.,1])),
+      Real_boot = map_dbl(Sel , ~sum(theta[.] == 0))
+    ) %>% select(-quantile_oracle_boot, -quantile_est_boot, -quantile_from)
+  return(Sel_boot)
+  
+}

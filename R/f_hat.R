@@ -1,26 +1,28 @@
-#' Title
+
+#' Non parametric density estimation
 #'
-#' @param x_obs
-#' @param f0x
-#' @param x
-#' @param h
+#' @param x_obs numeric vector : the whole observed values
+#' @param x numeric, the value where the density is estimated
+#' @param h numeric, the size of the window
+#' @param K function, the kernel to use 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-f_hat <- function(x_obs, x, h = 0.3){
-  sum(abs(x_obs - x) < h) / (2 * length(x_obs) * h)
+f_hatK <- function(x_obs, x, h = 0.3, K){
+  sum(K((x_obs - x) / h)) / ( length(x_obs) * h)
 }
 
-#' Title
+
+#' Naive f1 estimate
 #'
-#' @param f0x
-#' @param f_hatx
-#' @param pi0_hat
+#' @param f0x numeric vector.  The value of the density for the different obersvation under the null hypothesis.
+#' @param f_hatx numeric vector.  The value of the estimated density of the different obersvation.
+#' @param pi0_hat numeric, the estimated proportion of the null hypothesis. 
 #'
-#' @return
-#' @export
+#' @return numeric vector.  The value of the estimated density for the different obersvation under the alternatives.
+#' @export 
 #'
 #' @examples
 f1x_hat <- function(f0x, f_hatx, pi0_hat){

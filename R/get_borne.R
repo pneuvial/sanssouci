@@ -1,7 +1,7 @@
 #' Title
 #'
-#' @param B
-#' @param alpha
+#' @param B the matrix defined in the paper
+#' @param alpha the levels 
 #'
 #' @return
 #' @export
@@ -36,7 +36,7 @@ get_borne <- function(B, alpha){
 
 #' Title
 #'
-#' @param viterbi the best path
+#' @param viterbi the  path of 0/1 obtained using viterbi algorithm
 #' @param min_size minimum size of a set "Rk"
 #' @return
 #' @export
@@ -98,13 +98,13 @@ get_Rks <- function(viterbi, min_size = 1){
 #' L <- get_L1(A, m,fw_bc_oracle$alpha, fw_bc_oracle$beta, f0x,  f1x)
 #' Zeta <- get_zeta_ks(Rk_s, al = 0.2, for_back = fw_bc_oracle, L =L, f0x,  f1x)
 #' get_phborne(S = 1:m, Rk_s, Zeta)
-get_zeta_ks <- function(R_ks, al, for_back, L, f0x,  f1x){
+get_zeta_ks <- function(R_ks, al, for_back, Pis, f0x,  f1x){
   K <- length(R_ks)
   sapply(R_ks, function(R_k){
     if(length(R_k)>1){
-    Bk <- getB_k(L[R_k,R_k], length(R_k),for_back$alpha[R_k, ],
-                 for_back$beta[R_k, ], f0x[R_k],f1x[R_k])
-    get_borne(Bk, al /K)
+      quant <- get_quantiles(sel = R_k, li0 =for_back$gamma[,1],
+                             Pis = Pis, f0x = f0x, f1x = f1x)
+      borne(type_borne = "HMM", sel = R_k, a = quant, alpha = al / K)
     }else{
       for_back$gamma[R_k,1]<= al/K
     }

@@ -7,7 +7,7 @@
 get_Rks(viterbi, min_size = 1)
 }
 \arguments{
-\item{viterbi}{the best path}
+\item{viterbi}{the  path of 0/1 obtained using viterbi algorithm}
 
 \item{min_size}{minimum size of a set "Rk"}
 }

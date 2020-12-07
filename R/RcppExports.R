@@ -128,6 +128,39 @@ Em_tot <- function(m, A, Pi, f0x, f1x, x, eps, maxit, h) {
     .Call('_sansSouci_Em_tot', PACKAGE = 'sansSouci', m, A, Pi, f0x, f1x, x, eps, maxit, h)
 }
 
+#' Use EM algorithm to estimate the parameters A and Pi of an HMM
+#'
+#' @param m the number of positions (hypothesis)
+#' @param alpha a matrix m * 2  containing the forward variables
+#' @param beta a matrix m * 2  containing the backward variables
+#' @param A a matrix 2 * 2 the transition probabilities
+#' @param f0x a vector of the values of the density under the null hypothesis on the observations
+#' @param f1x a vector of the values of the density under the alternative hypothesis on the observations
+#' @param Pi a vector of the initial state probabilities
+#' @param eps the value ta reach for the convergence
+#' @param maxit integer, the maximum number of iteration
+#'
+#' @return Product of matrices
+#' @export
+#'
+#' @examples
+#'  m <-  10
+#'  A <- matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T)
+#'  f0 <- c(0, 1)
+#'  f1 <- c(2, 1)
+#'  Pi <- c( 0.9, 0.1)
+#'  rdata <- simulate.data.hmm.2states(m, Pi, A, f0, f1)
+#'  x <- rdata$x
+#'  theta <- rdata$theta
+#'  mod <- for_back(m, A, f0x, f1x, Pi)
+#'  f0x <- dnorm(x, f0[1], f0[2])
+#'  f1x <- dnorm(x, f1[1], f1[2])
+#'  alpha <- mod$alpha
+#'  beta <- mod$beta
+Em_tot_01 <- function(m, A, Pi, f0x, f1x, x, eps, maxit, h) {
+    .Call('_sansSouci_Em_tot_01', PACKAGE = 'sansSouci', m, A, Pi, f0x, f1x, x, eps, maxit, h)
+}
+
 empiricalCoverageO <- function(thr, Z) {
     .Call('_sansSouci_empiricalCoverageO', PACKAGE = 'sansSouci', thr, Z)
 }
@@ -190,6 +223,26 @@ get_L1 <- function(A, m, alpha, beta, f0x, f1x) {
 #' matrix_mult_cpp(A, B)
 getA01 <- function(m, li0, f0x, f1x, Pis) {
     .Call('_sansSouci_getA01', PACKAGE = 'sansSouci', m, li0, f0x, f1x, Pis)
+}
+
+#' New way of finding Bin ! (Now A)
+#'
+#' @param A a matrix 2 * 2 the transition probabilities
+#' @param m the number of positions (hypothesis)
+#' @param alpha a matrix m * 2  containing the forward variables
+#' @param beta a matrix m * 2  containing the backward variables
+#' @param f0x a vector of the values of the density under the null hypothesis on the observations
+#' @param f1x a vector of the values of the density under the alternative hypothesis on the observations
+#'
+#' @return Product of matrices
+#' @export
+#'
+#' @examples
+#' A <- matrix(1:9, 3, 3)
+#' B <- matrix(11:19, 3, 3)
+#' matrix_mult_cpp(A, B)
+getbound <- function(m, alpha, li0, f0x, f1x, Pis) {
+    .Call('_sansSouci_getbound', PACKAGE = 'sansSouci', m, alpha, li0, f0x, f1x, Pis)
 }
 
 marginalKFWER <- function(thr, Z) {

@@ -4,7 +4,7 @@
 \alias{get_zeta_ks}
 \title{Title}
 \usage{
-get_zeta_ks(R_ks, al, for_back, L, f0x, f1x)
+get_zeta_ks(R_ks, al, for_back, Pis, f0x, f1x)
 }
 \arguments{
 \item{R_ks}{list containing the position for the different Rk}
@@ -13,11 +13,11 @@ get_zeta_ks(R_ks, al, for_back, L, f0x, f1x)
 
 \item{for_back}{result from the forward backward algorithm}
 
-\item{L}{the L matrix (L[i,j] is the probability of theta_j = 0 knowing theta_i = 0 and X)}
-
 \item{f0x}{the values of the density under the null hypothesis for the different points}
 
 \item{f1x}{the values of the density under the alternative hypothesis for the different points}
+
+\item{L}{the L matrix (L[i,j] is the probability of theta_j = 0 knowing theta_i = 0 and X)}
 }
 \value{
 
