@@ -14,7 +14,6 @@ boots_param(
   al,
   seuil,
   min_size,
-  num_b,
   n,
   max_pi0,
   m0_init,
@@ -25,37 +24,35 @@ boots_param(
 )
 }
 \arguments{
-\item{A_est}{}
+\item{A_est}{the  transition matrix}
 
-\item{Pi_est}{}
+\item{Pi_est}{initial probabilities (if null the stationnary distributio  is used)}
 
-\item{x_from}{}
+\item{x_from}{the observed value}
 
-\item{prob1}{}
+\item{prob1}{the probability of being in state one ( obtain using forward backward algorithm for instance)}
 
-\item{h}{}
+\item{h}{the size of the window in the kernel algorithm}
 
-\item{Sel_from}{}
+\item{Sel_from}{the selection tibble for theobserved value (output of selection_tibble )}
 
-\item{al}{}
+\item{al}{the given risk}
 
-\item{seuil}{}
+\item{seuil}{threshold for the pvalues}
 
-\item{min_size}{}
+\item{min_size}{the minimum size of concomitant selected position in S ( by default ony used for viterbi_min_size)}
 
-\item{num_b}{}
+\item{n}{the number of individuals}
 
-\item{n}{}
+\item{max_pi0}{a given maximum values of pi_0}
 
-\item{max_pi0}{}
+\item{m0_init}{if the "guess" distribution of x under the nulll state is the normal this is the guess value of the mean}
 
-\item{m0_init}{}
+\item{sd0_init}{if the "guess" distribution of x under the nulll state is the normal this is the guess value of the standard}
 
-\item{sd0_init}{}
+\item{df_init}{if the distribution given to the EM is student, this is the degreee of freedom}
 
-\item{df_init}{}
-
-\item{norm_init}{}
+\item{norm_init}{logical, is the distribution under the null given to the EM algo is gaussian or not ? (if not consider as student)}
 }
 \value{
 

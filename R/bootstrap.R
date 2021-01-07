@@ -3,29 +3,28 @@
 
 #' Title
 #'
-#' @param A_est 
-#' @param Pi_est 
-#' @param x_from 
-#' @param prob1 
-#' @param h 
-#' @param Sel_from 
-#' @param al 
-#' @param seuil 
-#' @param min_size 
-#' @param num_b 
-#' @param n 
-#' @param max_pi0 
-#' @param m0_init 
-#' @param sd0_init 
-#' @param df_init 
-#' @param norm_init 
+#' @param A_est the  transition matrix
+#' @param Pi_est initial probabilities (if null the stationnary distributio  is used)
+#' @param x_from the observed value
+#' @param prob1 the probability of being in state one ( obtain using forward backward algorithm for instance)
+#' @param h the size of the window in the kernel algorithm
+#' @param Sel_from the selection tibble for theobserved value (output of selection_tibble )
+#' @param al the given risk
+#' @param seuil threshold for the pvalues
+#' @param min_size the minimum size of concomitant selected position in S ( by default ony used for viterbi_min_size)
+#' @param n the number of individuals
+#' @param max_pi0 a given maximum values of pi_0
+#' @param m0_init if the "guess" distribution of x under the nulll state is the normal this is the guess value of the mean
+#' @param sd0_init if the "guess" distribution of x under the nulll state is the normal this is the guess value of the standard
+#' @param df_init if the distribution given to the EM is student, this is the degreee of freedom
+#' @param norm_init logical, is the distribution under the null given to the EM algo is gaussian or not ? (if not consider as student)
 #'
 #' @return
 #' @export
 #'
 #' @examples
 boots_param <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, al,
-                        seuil, min_size, num_b, n,  max_pi0, m0_init, sd0_init, df_init, norm_init, type_init){
+                        seuil, min_size, n,  max_pi0, m0_init, sd0_init, df_init, norm_init, type_init){
   Sel_from <- Sel_from %>% rename(Sel_from = Sel)
   m <- length(x_from)
   Data_temp <- sim_hmm_from_weightkde( A_est,  Pi_est,  x_from, prob1, h, n )
