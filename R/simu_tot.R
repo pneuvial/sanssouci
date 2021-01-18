@@ -47,7 +47,7 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
                      b_act, d, seuil,
                      h =0.3,  n_boot, min_size, norm, m0, sd0, df,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999, 
-                     type_init, num_seed) {
+                     type_init, num_seed, f0_known, approx) {
   set.seed(num_seed)
   theta <- sim_markov(m,Pi, A)
   x <- rep(0, m)
@@ -105,10 +105,10 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
   b <- 1 - a
   c <- pi0_hat * b / (1 - pi0_hat)
   d <- 1 - c
-  Em <- Em_tot_01(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
+  Em <- Em(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
                   Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est, f1x = f1x_est,
                   x, eps = 0.0001,
-                  maxit =1000, h = h)
+                  maxit =1000, h = h, f0_known = f0_known, approx = approx)
   if(Em$A[1,1] > Em$A[2,2]){ 
     
     A_est <- Em$A
@@ -128,7 +128,11 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
     get_A( m,alpha = fw_bc_EM$alpha, beta = fw_bc_EM$beta, A_est, f0x_est, 
            f1x_est, i = i)
   })
-  
+  if(f0_known){
+    boots_param <- boots_param_known_f0
+  }else{
+    boots_param <- boots_param_unknown_f0
+  }
  Sel <- Selection_tibble(x, fw_bc_EM, seuil, A_est, f0x_est, f1x_est, Pi_est, min_size)
    ### Pour Estimer bootstrap : 
   boots <- enframe( x = 1:n_boot, name = NULL, value = "id_boot") %>% 

@@ -103,19 +103,19 @@ boots_param_unknown_f0 <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, a
            Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est_star, f1x = f1x_est_star,
            x, eps = 0.0001,
            maxit =1000, h = h, f0_known = FALSE, approx)
-  if(Em$A[1,1] > Em$A[2,2]){ 
+  # if(Em$A[1,1] > Em$A[2,2]){ 
     A_est_star <- Em$A
     Pi_est_sar <-Em$Pi
     f1x_est_star <- Em$f1x
     f0x_est_star <- Em$f0x
     fw_bc_EM_star <- Em$fw_bc_EM
-  }else{ 
-    A_est_star <- Em$A[2:1,2:1]
-    Pi_est_sar <-Em$Pi[2:1]
-    f0x_est_star <- Em$f1x
-    f1x_est_star <- Em$f0x
-    fw_bc_EM_star <- for_back(m, A_est_star,f0x_est_star, f1x_est_star, Pi_est_sar)
-  }
+  # }else{ 
+  #   A_est_star <- Em$A[2:1,2:1]
+  #   Pi_est_sar <-Em$Pi[2:1]
+  #   f0x_est_star <- Em$f1x
+  #   f1x_est_star <- Em$f0x
+  #   fw_bc_EM_star <- for_back(m, A_est_star,f0x_est_star, f1x_est_star, Pi_est_sar)
+  # }
   
   Pis_est_star <- lapply(2:m, function(i){
     get_A( m,alpha = fw_bc_EM_star$alpha, beta = fw_bc_EM_star$beta, 
@@ -191,7 +191,7 @@ boots_param_unknown_f0 <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, a
   #   ) %>% select(-quantile_oracle_boot, -quantile_est_boot, -quantile_from)
   
   
-  Sel_boot <- Sel %>% left_join(Sel_from, by = "Nom") %>%
+  Sel_boot <- Sel %>% full_join(Sel_from, by = "Nom") %>%
     mutate(IC_from = map(Sel_from, 
                          ~get_IC(sel = ., li0 = fw_bc_from$gamma[, 1], 
                                  Pis = Pis_from, f0x = f0x_from, f1x = f1x_from, al/2)), 
@@ -347,7 +347,7 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
   Sel <- Selection_tibble(x, fw_bc_EM_star, seuil, A_est_star, 
                           f0x_est_star, f1x_est_star, Pi_est_sar, min_size) %>% 
     rename(Size_boot = Size)
-  Sel_boot <- Sel %>% left_join(Sel_from, by = "Nom") %>%
+  Sel_boot <- Sel %>% full_join(Sel_from, by = "Nom") %>%
     mutate(IC_from = map(Sel_from, 
                                ~get_IC(sel = ., li0 = fw_bc_from$gamma[, 1], 
                                               Pis = Pis_from, f0x = f0x_from, f1x = f1x_from, al/2)), 
