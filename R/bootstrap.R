@@ -125,12 +125,17 @@ boots_param_unknown_f0 <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, a
   gamma_EM_star1 <- fw_bc_EM_star$gamma[,2]
   gamma_EM_star0 <- fw_bc_EM_star$gamma[,1]
   
-  if(approx){
-    d0_from <- density(x_from, weights = (gamma_EM_star1)/sum((gamma_EM_star1)))
-    d1_from <- density(x_from, weights = gamma_EM_star1/sum(gamma_EM_star1))
-    f1x_from <- approx(d1_from$x,d1_from$y,x_from)$y
-    f0x_from <- approx(d0_from$x,d0_from$y,x_from)$y
-    
+  if (approx) {
+    d0_from <- density(x_from)
+    d1_from <- density(x_from)
+    f0x_first <- sapply(d0_from$x, function(xi) {
+      sum(K((x - xi)/h) * gamma_EM_star0)/sum(h * gamma_EM_star0)
+    })
+    f1x_first <- sapply(d1_from$x, function(xi) {
+      sum(K((x - xi)/h) * gamma_EM_star1)/sum(h * gamma_EM_star1)
+    })
+    f1x_from <- approx(d1_from$x, f1x_first, x_from)$y
+    f0x_from <- approx(d0_from$x, f0x_first, x_from)$y
   }else{
     f1x_from  <-sapply(x_from, function(xi){
       sum(K((x -xi)/h) * gamma_EM_star1) / sum(h * gamma_EM_star1)
@@ -319,8 +324,11 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
   gamma_EM_star1 <- fw_bc_EM_star$gamma[, 2]
   gamma_EM_star0 <- fw_bc_EM_star$gamma[, 1]
   if (approx) {
-    d1_from <- density(x_from, weights = gamma_EM_star1/sum(gamma_EM_star1))
-    f1x_from <- approx(d1_from$x, d1_from$y, x_from)$y
+    d1_from <- density(x_from)
+    f1x_first <- sapply(d1_from$x, function(xi) {
+      sum(K((x - xi)/h) * gamma_EM_star1)/sum(h * gamma_EM_star1)
+    })
+    f1x_from <- approx(d1_from$x, f1x_first, x_from)$y
   }
   else {
     f1x_from <- sapply(x_from, function(xi) {
