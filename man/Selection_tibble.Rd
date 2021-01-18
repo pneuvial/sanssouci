@@ -4,7 +4,17 @@
 \alias{Selection_tibble}
 \title{Title}
 \usage{
-Selection_tibble(x, fw_bc, seuil, A_est, f0x_est, f1x_est, Pi_est, min_size)
+Selection_tibble(
+  x,
+  fw_bc,
+  seuil,
+  A_est,
+  f0x_est,
+  f1x_est,
+  Pi_est,
+  min_size,
+  pval = NULL
+)
 }
 \arguments{
 \item{x}{}
@@ -21,7 +31,7 @@ Selection_tibble(x, fw_bc, seuil, A_est, f0x_est, f1x_est, Pi_est, min_size)
 
 \item{Pi_est}{}
 
-\item{min_size}{}
+\item{pval}{}
 }
 \value{
 

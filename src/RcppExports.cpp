@@ -172,6 +172,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getIC
+arma::vec getIC(int m, double alpha, arma::vec li0, arma::vec f0x, arma::vec f1x, Rcpp::List Pis);
+RcppExport SEXP _sansSouci_getIC(SEXP mSEXP, SEXP alphaSEXP, SEXP li0SEXP, SEXP f0xSEXP, SEXP f1xSEXP, SEXP PisSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type li0(li0SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type f0x(f0xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type f1x(f1xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type Pis(PisSEXP);
+    rcpp_result_gen = Rcpp::wrap(getIC(m, alpha, li0, f0x, f1x, Pis));
+    return rcpp_result_gen;
+END_RCPP
+}
 // marginalKFWER
 NumericVector marginalKFWER(NumericVector thr, arma::mat Z);
 RcppExport SEXP _sansSouci_marginalKFWER(SEXP thrSEXP, SEXP ZSEXP) {
@@ -316,6 +332,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sansSouci_get_L1", (DL_FUNC) &_sansSouci_get_L1, 6},
     {"_sansSouci_getA01", (DL_FUNC) &_sansSouci_getA01, 5},
     {"_sansSouci_getbound", (DL_FUNC) &_sansSouci_getbound, 6},
+    {"_sansSouci_getIC", (DL_FUNC) &_sansSouci_getIC, 6},
     {"_sansSouci_marginalKFWER", (DL_FUNC) &_sansSouci_marginalKFWER, 2},
     {"_sansSouci_minPseudoRanks", (DL_FUNC) &_sansSouci_minPseudoRanks, 2},
     {"_sansSouci_partialColSortDescCpp", (DL_FUNC) &_sansSouci_partialColSortDescCpp, 2},

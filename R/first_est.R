@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' m <- 2000
-#' theta <- sim_markov(m = 200 ,Pi = c(0.8,0.2), A = matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T))
+#' theta <- sim_markov(m, Pi = c(0.8,0.2), A = matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T))
 #' x <- rep(0, m)
 #'  x[theta == 0] <- rnorm(sum(theta ==0))
 #'  x[theta == 1] <- rnorm(sum(theta ==1), 2, 1)
@@ -26,8 +26,8 @@
 Estimation <- function(x,  h =0.3,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999, 
                      f0_known = TRUE, f0x_est = NULL, pval = NULL, 
-                     plot = FALSE, size_plot= min(10000, length(x))){
-  browser()
+                     plot = FALSE, size_plot= min(10000, length(x)), 
+                     approx = TRUE){
   m <- length(x)
   
 if(is.null(f0x_est)){
@@ -48,8 +48,14 @@ if(is.null(f0x_est)){
     
   }
 pi0_hat <- max(min(sum(pval > 0.8) / (m * 0.2), max_pi0), 0.6)
-f_hatx <- x %>%
-  map_dbl( ~f_hatK(x, ., h = h,K) )
+if(approx){
+  d <- density(x,bw = h)
+  f_hatx <- approx(d$x,d$y,x)$y
+}else {
+  f_hatx <- x %>%
+    map_dbl( ~f_hatK(x, ., h = h,K) )
+}
+
 f1x_est <-  f1x_hat(f0x_est, f_hatx, pi0_hat)
 f1x_est[f1x_est <= 0] <- min(f0x_est)
 mini <- max(0.6, ((1 + max_pi0) * pi0_hat -max_pi0) / pi0_hat)
@@ -68,12 +74,12 @@ if(plot){
   
 if(!f0_known){
     p<- tibble(x =x[nb_plot],f0x_init = f0x_est[nb_plot], f0x_est = Em$f0x[nb_plot], 
-           f1x_init = f1x_est[nb_plot], f1x_est = Em$f1x ) %>% 
+           f1x_init = f1x_est[nb_plot], f1x_est = Em$f1x[nb_plot] ) %>% 
       gather(-x, key = "key", value = "value") %>% 
       ggplot(aes(x = x, y = value, color = key)) + geom_line() + theme_bw()
   }else{
     p<- tibble(x =x[nb_plot],f0x_init = f0x_est[nb_plot],  
-               f1x_init = f1x_est[nb_plot], f1x_est = Em$f1x ) %>% 
+               f1x_init = f1x_est[nb_plot], f1x_est = Em$f1x[nb_plot] ) %>% 
       gather(-x, key = "key", value = "value") %>% 
       ggplot(aes(x = x, y = value, color = key)) + geom_line() + theme_bw()
     

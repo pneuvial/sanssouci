@@ -27,13 +27,16 @@ pval_m <-function(x, p0){
 #' @param f0x_est 
 #' @param f1x_est 
 #' @param Pi_est 
-#' @param min_size 
+#' @param min_size
+#' @param pval 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-Selection_tibble <- function(x, fw_bc, seuil, A_est, f0x_est, f1x_est, Pi_est, min_size){
+Selection_tibble <- function(x, fw_bc, seuil, A_est,
+                             f0x_est, f1x_est, Pi_est, min_size, 
+                             pval = NULL){
   
   m <- length(x)
   
@@ -51,8 +54,10 @@ Selection_tibble <- function(x, fw_bc, seuil, A_est, f0x_est, f1x_est, Pi_est, m
   
   sel_viter_min_size <- long_reg(viterbi, min_size)
   sel_viter_est <- which(viterbi == 1)
-  pvalm <- pval_m(x, fw_bc$gamma[,1])
-  pvalm_tresh <- which(pvalm < seuil)
+  if(is.null(pval)){
+  pval <- pval_m(x, fw_bc$gamma[,1])
+  }
+  pvalm_tresh <- which(pval < seuil)
   
   Sel <- tibble( Sel = list(
     pvalm_tresh,

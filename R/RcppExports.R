@@ -21,10 +21,10 @@
 #'  f0 <- c(0, 1)
 #'  f1 <- c(2, 1)
 #'  Pi <- c( 0.9, 0.1)
-#'  rdata <- simulate.data.hmm.2states(m, Pi, A, f0, f1)
+#'  rdata <- sim_hmm_2states(m, Pi, A, f0, f1)
 #'  x <- rdata$x
 #'  theta <- rdata$theta
-#'  mod <- for_back(m, A, f0x, f1x, Pi)
+#'  mod <- for_back(m, A, f0x = dnorm(x), f1x = dnorm(x, 1,2), Pi)
 for_back <- function(m, A, f0x, f1x, Pi) {
     .Call('_sansSouci_for_back', PACKAGE = 'sansSouci', m, A, f0x, f1x, Pi)
 }
@@ -243,6 +243,40 @@ getA01 <- function(m, li0, f0x, f1x, Pis) {
 #' matrix_mult_cpp(A, B)
 getbound <- function(m, alpha, li0, f0x, f1x, Pis) {
     .Call('_sansSouci_getbound', PACKAGE = 'sansSouci', m, alpha, li0, f0x, f1x, Pis)
+}
+
+#' New way of finding Bin ! (Now A)
+#'
+#' @param A a matrix 2 * 2 the transition probabilities
+#' @param m the number of positions (hypothesis)
+#' @param alpha a matrix m * 2  containing the forward variables
+#' @param beta a matrix m * 2  containing the backward variables
+#' @param f0x a vector of the values of the density under the null hypothesis on the observations
+#' @param f1x a vector of the values of the density under the alternative hypothesis on the observations
+#'
+#' @return Product of matrices
+#' @export
+#'
+#' @examples
+#' m <-  100
+#' A <- matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T)
+#'   rdata <- sim_hmm_2states(m, Pi, A, f0 = c(0,1), f1= c(2,1))
+#'  x <- rdata$x
+#'  f0x <- dnorm(x)
+#'  f1x <- dnorm(x, 1,2)
+#'   mod <- for_back(m, A, f0x, f1x, Pi)
+#'     Pis_est <- lapply(2:m, function(i){
+#'  get_A( m,alpha = mod$alpha, beta = mod$beta, A, f0x, 
+#'         f1x, i = i)
+#'  })
+#'  alpha <- 0.1
+#' getIC(length(x), alpha, mod$gamma[,1], f0x, f1x, Pis_est)
+#' quant <- get_quantiles(sel = 1:m, li0 = mod$gamma[, 1], 
+#'  Pis = Pis_est, f0x = f0x, f1x = f1x)
+#'  borne(type_borne = "HMM", sel = 1:m, a = quant, alpha )
+#'  borne(type_borne = "HMM_small", sel = 1:m, a = quant, alpha)
+getIC <- function(m, alpha, li0, f0x, f1x, Pis) {
+    .Call('_sansSouci_getIC', PACKAGE = 'sansSouci', m, alpha, li0, f0x, f1x, Pis)
 }
 
 marginalKFWER <- function(thr, Z) {

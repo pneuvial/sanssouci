@@ -16,7 +16,8 @@ Estimation(
   f0x_est = NULL,
   pval = NULL,
   plot = FALSE,
-  size_plot = min(10000, length(x))
+  size_plot = min(10000, length(x)),
+  approx = TRUE
 )
 }
 \arguments{
@@ -52,7 +53,7 @@ Title
 }
 \examples{
 m <- 2000
-theta <- sim_markov(m = 200 ,Pi = c(0.8,0.2), A = matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T))
+theta <- sim_markov(m, Pi = c(0.8,0.2), A = matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T))
 x <- rep(0, m)
  x[theta == 0] <- rnorm(sum(theta ==0))
  x[theta == 1] <- rnorm(sum(theta ==1), 2, 1)

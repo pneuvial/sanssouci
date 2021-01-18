@@ -35,8 +35,8 @@ Perform the forward backward algorithm (see Rabiner 89)
  f0 <- c(0, 1)
  f1 <- c(2, 1)
  Pi <- c( 0.9, 0.1)
- rdata <- simulate.data.hmm.2states(m, Pi, A, f0, f1)
+ rdata <- sim_hmm_2states(m, Pi, A, f0, f1)
  x <- rdata$x
  theta <- rdata$theta
- mod <- for_back(m, A, f0x, f1x, Pi)
+ mod <- for_back(m, A, f0x = dnorm(x), f1x = dnorm(x, 1,2), Pi)
 }
