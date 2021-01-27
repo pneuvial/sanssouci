@@ -36,6 +36,7 @@ pval_m <-function(x, p0){
 #' @examples
 Selection_tibble <- function(x, fw_bc, seuil, A_est,
                              f0x_est, f1x_est, Pi_est, min_size, 
+                             min_jump = NULL,
                              pval = NULL){
   
   m <- length(x)
@@ -53,6 +54,17 @@ Selection_tibble <- function(x, fw_bc, seuil, A_est,
   
   
   sel_viter_min_size <- long_reg(viterbi, min_size)
+  if(!is.null(min_jump)){
+    diff <- sel_viter_min_size[-1] - sel_viter_min_size[-length(sel_viter_min_size)]
+    tomerge <- which(diff < min_jump & round(diff)!=1)
+    if(length(tomerge)>=1){
+      sel_viter_min_size_supp <- unlist(lapply(tomerge,function(x){
+        (sel_viter_min_size[x] +1): (sel_viter_min_size[x+1]-1 )
+      } ))
+      sel_viter_min_size <- sort(c(sel_viter_min_size,sel_viter_min_size_supp))
+    }
+     
+  }
   sel_viter_est <- which(viterbi == 1)
   if(is.null(pval)){
   pval <- pval_m(x, fw_bc$gamma[,1])

@@ -31,7 +31,9 @@ simu_tot(
   norm_init,
   max_pi0 = 0.99999,
   type_init,
-  num_seed
+  num_seed,
+  f0_known,
+  approx
 )
 }
 \arguments{

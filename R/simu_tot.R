@@ -112,13 +112,13 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
   if(Em$A[1,1] > Em$A[2,2]){ 
     
     A_est <- Em$A
-    Pi_est <-Em$Pi[,1]
+    Pi_est <-Em$Pi
     f0x_est <- Em$f0x
     f1x_est <- Em$f1x
     fw_bc_EM <- Em$fw_bc_EM
   }else{ 
     A_est <- Em$A[2:1,2:1]
-    Pi_est <-Em$Pi[2:1,1]
+    Pi_est <-Em$Pi[2:1]
     f0x_est <- Em$f1x
     f1x_est <- Em$f0x
     fw_bc_EM <- for_back(m, A_est,f0x_est, f1x_est, Pi_est)
