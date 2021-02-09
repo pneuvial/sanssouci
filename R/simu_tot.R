@@ -41,7 +41,9 @@
 #' type_sim = c("HMM"),
 #' n_boot = 20,
 #' al = 0.2, s_dbnr = 10, b_act = 2, d = 1, seuil= 0.05,
-#' min_size = 2, norm = TRUE, sd0 = 0.5, m0= 0,sd0_init = 0.5, m0_init= 0, norm_init = TRUE, df= 2)
+#' min_size = 2, norm = TRUE, sd0 = 0.5, m0= 0,sd0_init = 0.5, m0_init= 0,
+#'  norm_init = TRUE, df= 2, num_seed= 1234, type_init="given", f0_known=FALSE, 
+#'  approx = TRUE)
 
 simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
                      b_act, d, seuil,
@@ -109,20 +111,20 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
                   Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est, f1x = f1x_est,
                   x, eps = 0.0001,
                   maxit =1000, h = h, f0_known = f0_known, approx = approx)
-  if(Em$A[1,1] > Em$A[2,2]){ 
+  # if(Em$A[1,1] > Em$A[2,2]){ 
     
     A_est <- Em$A
     Pi_est <-Em$Pi
     f0x_est <- Em$f0x
     f1x_est <- Em$f1x
     fw_bc_EM <- Em$fw_bc_EM
-  }else{ 
+  # }else{ 
     A_est <- Em$A[2:1,2:1]
     Pi_est <-Em$Pi[2:1]
     f0x_est <- Em$f1x
     f1x_est <- Em$f0x
     fw_bc_EM <- for_back(m, A_est,f0x_est, f1x_est, Pi_est)
-  }
+  # }
   
   Pis_est <- lapply(2:m, function(i){
     get_A( m,alpha = fw_bc_EM$alpha, beta = fw_bc_EM$beta, A_est, f0x_est, 
@@ -146,7 +148,8 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
                                                 max_pi0 = max_pi0,
                                                 m0_init =  m0_init, sd0_init = sd0_init,
                                                 df_init  = df_init, norm_init = norm_init, 
-                                                type_init = type_init))) %>% 
+                                                type_init = type_init,
+                                                approx = approx))) %>% 
     unnest(HMM_boot) %>% 
     select(- Sel) %>% 
     nest(Est_HMM_boot = c(id_boot, Real_boot,
@@ -157,7 +160,9 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
                           V_HMM_est_boot_aldemi_samesel,
                           V_HMM_small_est_boot_aldemi_samesel,
                           Espe, 
-                          Size)) 
+                          Size, 
+                          Size_boot, 
+                          Sel_from)) 
   
   Det_a <- det(A_est)
   
@@ -166,42 +171,34 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
       sd0_init_est = sd0_init, 
       m0_init_est = m0_init,
       Det_A_est = Det_a,
-      quantile_oracle = map(Sel,~get_quantiles(sel = ., li0 =fw_bc_or$gamma[,1],
-                                               Pis = Pis_or, f0x = f0x, f1x = f1x)), 
-      quantile_est = map(Sel,~get_quantiles(sel = ., li0 =fw_bc_EM$gamma[,1],
-                                            Pis = Pis_est, f0x = f0x_est, f1x = f1x_est)),
+      IC_or_aldemi = map(Sel,~get_IC(sel = ., li0 = fw_bc_or$gamma[,1],
+                                      Pis = Pis_or, f0x =f0x ,
+                                      f1x= f1x, alpha = al/2)),
+      IC_or = map(Sel,~get_IC(sel = ., li0 = fw_bc_or$gamma[,1],
+                              Pis = Pis_or, f0x =f0x ,
+                              f1x= f1x, alpha = al)),
+      IC_est_aldemi = map(Sel,~get_IC(sel = ., li0 = fw_bc_EM$gamma[,1],
+                                      Pis = Pis_est, f0x =f0x_est ,
+                                      f1x= f1x_est, alpha = al/2)),
+      IC_est = map(Sel,~get_IC(sel = ., li0 = fw_bc_EM$gamma[,1],
+                               Pis = Pis_est, f0x =f0x_est ,
+                               f1x= f1x_est, alpha = al)),
       V_simes = map_dbl(Sel,~borne ( type_borne = "Simes", sel = ., m = m,
                                      pval = pval, alpha = al)
       ),
-      V_HMM_oracle =  map2_dbl(Sel, quantile_oracle,~borne(
-        type_borne = "HMM", sel = .x, a = .y, alpha = al)
-      ),
-      V_HMM_small_oracle =  map2_dbl(Sel, quantile_oracle,~borne(
-        type_borne = "HMM_small", sel = .x, a = .y, alpha = al)
-      ),
-      V_HMM_est =  map2_dbl(Sel, quantile_est,~borne(
-        type_borne = "HMM", sel = .x, a = .y, alpha = al)
-      ),
-      V_HMM_small_est =  map2_dbl(Sel, quantile_est,~borne(
-        type_borne = "HMM_small", sel = .x, a = .y, alpha = al)
-      ),
-      V_HMM_est_aldemi =  map2_dbl(Sel, quantile_est,~borne(
-        type_borne = "HMM", sel = .x, a = .y, alpha = al / 2)
-      ),
-      V_HMM_small_est_aldemi =  map2_dbl(Sel, quantile_est,~borne(
-        type_borne = "HMM_small", sel = .x, a = .y, alpha = al /2)
-      ),
-      median_est =  map2_dbl(Sel, quantile_est,~borne(
-        type_borne = "HMM", sel = .x, a = .y, alpha = 0.5)
-      ), 
-      median_oracle = map2_dbl(Sel, quantile_oracle,~borne(
-        type_borne = "HMM", sel = .x, a = .y, alpha = 0.5)
-      ),
-      FDR_est = map_dbl(Sel, ~sum(fw_bc_EM$gamma[.,1])),
+      V_HMM_or_aldemi =  map_dbl(IC_or_aldemi,~.[2]),
+      V_HMM_small_or_aldemi =  map_dbl(IC_or_aldemi,~.[1]),
+      V_HMM_small_or =  map_dbl(IC_or,~.[1]),
+      V_HMM_or =  map_dbl(IC_or,~.[2]),
+      V_HMM_est_aldemi =  map_dbl(IC_est_aldemi,~.[2]),
+      V_HMM_small_est_aldemi =  map_dbl(IC_est_aldemi,~.[1]),
+      V_HMM_small_est =  map_dbl(IC_est,~.[1]),
+      V_HMM_est =  map_dbl(IC_est,~.[2]),
+      FDR_est = map_dbl(Sel, ~sum( fw_bc_EM$gamma[.,1])),
       FDR_or  = map_dbl(Sel, ~sum(fw_bc_or$gamma[.,1])),
       V_real = map_dbl(Sel , ~sum(theta[.] == 0))
     ) %>%
-    select(-Sel, -quantile_oracle, -quantile_est) %>%
+    select(-Sel,  -IC_est, -IC_est_aldemi) %>% 
     left_join(boots, by = c("Nom"))
   
   return(Final)

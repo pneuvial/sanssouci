@@ -4,7 +4,7 @@
 \alias{res_FDR}
 \title{Title}
 \usage{
-res_FDR(Result_hmm_boot)
+res_FDR(Result_hmm_boot, seuil, min_size)
 }
 \arguments{
 \item{Result_hmm_boot}{}
@@ -14,4 +14,7 @@ res_FDR(Result_hmm_boot)
 }
 \description{
 Title
+}
+\examples{
+
 }

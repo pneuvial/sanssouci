@@ -14,6 +14,7 @@ boots_param_unknown_f0(
   al,
   seuil,
   min_size,
+  min_jump = NULL,
   n,
   max_pi0,
   m0_init,

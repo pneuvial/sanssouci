@@ -104,5 +104,7 @@ prob = c(0.5),
 type_sim = c("HMM"),
 n_boot = 20,
 al = 0.2, s_dbnr = 10, b_act = 2, d = 1, seuil= 0.05,
-min_size = 2, norm = TRUE, sd0 = 0.5, m0= 0,sd0_init = 0.5, m0_init= 0, norm_init = TRUE, df= 2)
+min_size = 2, norm = TRUE, sd0 = 0.5, m0= 0,sd0_init = 0.5, m0_init= 0,
+ norm_init = TRUE, df= 2, num_seed= 1234, type_init="given", f0_known=FALSE, 
+ approx = TRUE)
 }

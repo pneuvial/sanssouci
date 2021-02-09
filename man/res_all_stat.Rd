@@ -4,7 +4,7 @@
 \alias{res_all_stat}
 \title{Title}
 \usage{
-res_all_stat(Result_hmm_boot)
+res_all_stat(Result_hmm_boot, seuil, min_size)
 }
 \arguments{
 \item{Result_hmm_boot}{}

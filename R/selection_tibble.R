@@ -72,11 +72,13 @@ Selection_tibble <- function(x, fw_bc, seuil, A_est,
   pvalm_tresh <- which(pval < seuil)
   
   Sel <- tibble( Sel = list(
+    1:m,
     pvalm_tresh,
     sel_sc, 
     sel_viter_est,
     sel_viter_min_size),
-    Nom = c("pval_tresh",
+    Nom = c("all",
+    "pval_tresh",
             "lfdr_tresh", 
             "sel_viter_est",
             "sel_viter_min_size"
