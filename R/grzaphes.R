@@ -14,7 +14,7 @@ graphes <- function(nom, x, pos, Est_cnv, Sel, Final ){
   
 data_rep <-   tibble(chr = x, x = pos) %>% 
     ggplot(aes(x = x, y = chr)) + geom_point() + 
-    labels(y = nom)
+    labs(y = nom)
   
 densities <- tibble(f0x_est = Est_cnv$Em$f0x, f1x_est = Est_cnv$Em$f1x, chr= x) %>% 
   gather(-chr, key ="Densities", value = "value") %>% 
