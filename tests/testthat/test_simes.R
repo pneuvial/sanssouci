@@ -99,6 +99,19 @@ test_that("posthocBySimes0 is posthocBySimes0Rcpp for simulated data", {
     }
 })
 
+test_that("posthocBySimes is posthocBySimes0Rcpp for simulated data an no signal", {
+    m <- 1e3
+    m1 <- 100
+    alpha <- 0.01
+    p <- 1-pnorm(c(rnorm(m1, mean=0), rnorm(m-m1, mean=0)))
+    nR <- round(runif(1)*m)
+    R <- sample(nR)
+    expect_equal(posthocBySimes(p, R, alpha = alpha),
+                 posthocBySimes0Rcpp(p, R, alpha = alpha))
+    expect_equal(posthocBySimes(p, R, alpha = alpha, Rcpp = TRUE),
+                 posthocBySimes0Rcpp(p, R, alpha = alpha))
+})
+
 test_that("posthocBySimes0 can be reproduced by minTP", {
     m <- 1e3
     m1 <- 100
@@ -111,13 +124,10 @@ test_that("posthocBySimes0 can be reproduced by minTP", {
     R <- sample(nR)
     for (alpha in alphas) {
         thrSimes <- SimesThresholdFamily(m)(alpha)
-        ubSimes <- minTP(x[R], thrSimes)
+        ubSimes <- minTP(p[R], thrSimes)
         expect_equal(posthocBySimes0(p, R, alpha = alpha), 
                      ubSimes)
-        # p-value scale
-        ubSimesP <- minTP(1-p[R], 1-alpha*1:m/m)
-        expect_equal(posthocBySimes0(p, R, alpha = alpha), 
-                     ubSimesP)
     }
+    
+    posthocBySimes0(p, R, alpha = alpha)
 })
-

@@ -13,7 +13,7 @@
 #'   size for condition "y"
 #' @param alternative A character string specifying the alternative hypothesis.
 #'   Currently only "two.sided" is implemented
-#' @return A list with class "htest" containing the following components:
+#' @return A list with elements:
 #'   \describe{ \item{statistic}{the value of the t-statistic}
 #'   \item{parameter}{the degrees of freedom for the t-statistic}
 #'   \item{p.value}{the p-value for the test} }
@@ -55,7 +55,7 @@ suffWelchTest <- function(mx, my, sx, sy, nx, ny,
     stopifnot(length(nx) %in% c(1, p))
     stopifnot(length(ny) %in% c(1, p))
 
-    sse.x <- sx^2/nx
+    sse.x <- sx^2/nx  ## sc <- sqrt((sum2c - sumc^2/nc)/(nc-1))
     sse.y <- sy^2/ny
     
     sse <- sse.x + sse.y
@@ -75,12 +75,9 @@ suffWelchTest <- function(mx, my, sx, sy, nx, ny,
                    "greater" = 1 - pt(stat, df = df),
                    "less" = pt(stat, df = df))
     
-    res <- list(statistic = stat,
+    list(statistic = stat,
                 parameter = df,
                 p.value = pval)
-    
-    class(res) <- "htest"
-    res
 }
 
 

@@ -5,13 +5,13 @@
 #' @param mat A numeric matrix whose rows correspond to variables and columns to
 #'   observations
 #'
-#' @param categ A vector of \code{ncol(mat)} categories in \eqn{'0','1'} for the
+#' @param categ A numeric vector of \code{ncol(mat)} categories in \eqn{0, 1} for the
 #'   observations
 #'
 #' @param alternative A character string specifying the alternative hypothesis.
 #'   Must be one of "two.sided" (default), "greater" or "less". As in
 #'   \code{\link{wilcox.test}}, alternative = "greater" is the alternative that
-#'   class '1' is shifted to the right of class '0'.
+#'   class 1 is shifted to the right of class 0.
 #'
 #' @param correct A logical indicating whether to apply continuity correction in
 #'   the normal approximation for the p-value.
@@ -27,7 +27,7 @@
 #'
 #' @author Gilles Blanchard, Pierre Neuvial and Etienne Roquain
 #' @seealso wilcox.test
-#' @return A list with elements \describe{ \item{stat}{A vector of \code{m}
+#' @return A data.frame with columns \describe{ \item{stat}{A vector of \code{m}
 #'   Wilcoxon sum rank test statistics of association between \code{X} and
 #'   \code{y}.} \item{stat0Mat}{An \code{m} x \code{B} matrix of \code{B}
 #'   realizations of a \code{m}-dimensional vector of test statistics under the
@@ -83,8 +83,6 @@ rowWilcoxonTests <- function(mat, categ, alternative = c("two.sided", "less", "g
                 greater = pnorm(z, lower.tail = FALSE), 
                 two.sided = 2 * pmin(pnorm(z), pnorm(z, lower.tail = FALSE)))
 
-    res <- list(statistic = stat,
+    data.frame(statistic = stat,
                 p.value = p)
-    class(res) <- "htest"
-    res
 }

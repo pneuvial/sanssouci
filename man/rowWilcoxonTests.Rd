@@ -15,13 +15,13 @@ rowWilcoxonTests(
 \item{mat}{A numeric matrix whose rows correspond to variables and columns to
 observations}
 
-\item{categ}{A vector of \code{ncol(mat)} categories in \eqn{'0','1'} for the
+\item{categ}{A numeric vector of \code{ncol(mat)} categories in \eqn{0, 1} for the
 observations}
 
 \item{alternative}{A character string specifying the alternative hypothesis.
 Must be one of "two.sided" (default), "greater" or "less". As in
 \code{\link{wilcox.test}}, alternative = "greater" is the alternative that
-class '1' is shifted to the right of class '0'.}
+class 1 is shifted to the right of class 0.}
 
 \item{correct}{A logical indicating whether to apply continuity correction in
 the normal approximation for the p-value.}
@@ -31,7 +31,7 @@ A list with class "htest" containing the following components:
   \describe{ \item{statistic}{the value of the statistics} \item{p.value}{the
   p-values for the tests}}
 
-A list with elements \describe{ \item{stat}{A vector of \code{m}
+A data.frame with columns \describe{ \item{stat}{A vector of \code{m}
   Wilcoxon sum rank test statistics of association between \code{X} and
   \code{y}.} \item{stat0Mat}{An \code{m} x \code{B} matrix of \code{B}
   realizations of a \code{m}-dimensional vector of test statistics under the

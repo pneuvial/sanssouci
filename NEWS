@@ -3,6 +3,58 @@
 Package: sansSouci
 ==================
 
+Version 0.9.4 [2020-12-24]
+
+* Added IIDEA vignette (for volcano plot shiny app)
+* Volcano plot shiny app: improved user interface
+
+
+
+Version 0.9.3 [2020-11-25]
+
+* Increased modularity in get_pivotal_stat
+* Add test script for get_pivotal_stat* for Simes and Beta templates
+
+Version 0.9.2 [2020-11-14]
+
+* Volcano plot shiny app: improved user interface + add interaction with Gene Ontology 
+
+Version 0.9.1 [2020-11-07]
+
+* Add alpha version of volcano plot shiny app
+* Add slow but easier to understand implementation of lambda-calibration for description and testing purposes
+
+Version 0.9.0 [2020-10-06]
+
+* Update package README and website
+* Add fMRI vignette (using the sansSouci.data package)
+* Use the sansSouci.data package in differential expression vignette
+
+Version 0.8.5 [2020-09-10]
+* 'calibrateJER' and 'testByRandomization' gained argument 'categ' so that the mapping between observations and samples (in the two-sample test case) is explicit
+* Some improvements in 'plotConfidenceEnvelopes'
+* Moved from Travis/Appveyor to github actions for CI
+
+
+Version 0.8.4 [2020-08-18]
+* Removed testByRandomization.cpp and functions 'testByNnnR' (unused) to address #17
+* Dropped data/ex-rMAPS.rda (unused) 
+* Renamed data/volcano.rda to data/volcano_plot.rda to fix #18
+
+Version 0.8.3 [2020-07-21]
+* Added 'plotConfidenceEnvelope' and 'volcanoPlot'
+* Improved vignette 'two-sample.Rmd'
+* Moved from the (one-sided Gaussian) test statistics scale to the p-value scale
+
+Version 0.8.2 [2020-07-20]
+
+* Added 'two-sample.Rmd': a vignette for two-sample tests
+* Added 'confidenceEnvelope': a high-level function to calculate confidence envelopes for true/false positives + corresponding tests.
+* 'curveMaxFP' is not exported anymore
+* 'calibrateJER' now outputs confidence envelopes for top-$k$ lists
+* Replaced calls to '1-pnorm(x)' and alikes by 'pnorm(x, lower.tail=FALSE)' as per #14
+* Improved tests
+
 Version 0.8.1 [2019-10-16]
 
 * Added a shiny app to illustrate the bounds of the DBNR paper.

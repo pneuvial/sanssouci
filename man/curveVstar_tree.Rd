@@ -43,9 +43,8 @@ op <- order(pvals)
 Vp <- curveVstar_tree(treeFam, op)
 
 # Simes
-thrSimes <- SimesThresholdFamily(m)(alpha)
-stats <- qnorm(1-pvals)
-VpS <- curveMaxFP(stats[op], thrSimes)
+ce <- confidenceEnvelope(pvals, refFamily = "Simes", param = alpha, what = "FP")
+VpS <- ce$bound
 
 plot(1:m, 1:m-Vp, t = 's',
      xlim = c(0, 2*m1), ylim = c(0, m1))
@@ -54,9 +53,9 @@ lines(1:m, 1:m-VpS, t = 's', col = 3)
 # order by 'mu' (favorable to DKWM)
 omu <- order(mu, decreasing = TRUE)
 Vmu <- curveVstar_tree(treeFam, omu)
-
-#VmuS <- curveMaxFP(stats[omu], thrSimes) # does not work as stats[omu] can be increasing
-#VmuS <- curveMaxFP(stats[omu], thrSimes, flavor = "BNR2014") # works
+thrSimes <- SimesThresholdFamily(m)(alpha)
+#VmuS <- curveMaxFP(pvals[omu], thrSimes) # does not work as pvals[omu] can be non-increasing ??
+#VmuS <- curveMaxFP(pvals[omu], thrSimes, flavor = "BNR2014") # works but is slow!
 SmuS <- sapply(1:m, FUN=function(kk) posthocBySimes(pvals, omu[1:kk], alpha))
 
 plot(1:m, 1:m-Vmu, t = 's',

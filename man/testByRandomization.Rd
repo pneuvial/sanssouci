@@ -6,15 +6,19 @@
 \usage{
 testByRandomization(
   X,
+  categ,
   B,
   alternative = c("two.sided", "less", "greater"),
   rowTestFUN = rowWelchTests,
-  rand.p.value = FALSE,
-  seed = NULL
+  rand.p.value = FALSE
 )
 }
 \arguments{
 \item{X}{a matrix of \code{m} variables by \code{n} observations}
+
+\item{categ}{An optional numeric vector of \eqn{n} values in \eqn{0, 1}
+specifying the column indices of the first and second samples. If not
+provided, a one-sample test is performed.}
 
 \item{B}{A numeric value, the number of permutations to be performed}
 
@@ -26,9 +30,6 @@ Defaults to \code{\link{rowWelchTests}}}
 
 \item{rand.p.value}{A boolean value: should randomization \eqn{p}-values be
 calculated and returned? Defaults to @FALSE}
-
-\item{seed}{An integer (or NULL) value used as a seed for random number
-generation. If \code{NULL}, no seed is specified}
 }
 \value{
 a list with elements: \describe{
@@ -89,8 +90,10 @@ B <- 1e3
 
 ## two-sample data
 sim <- gaussianSamples(m, rho, n, pi0, SNR = 2, prob = 0.5)
-tests <- testByRandomization(sim$X, B)
-testsW <- testByRandomization(sim$X, B = 10, rowTestFUN = rowWilcoxonTests)
+X <- sim$X
+categ <-sim$categ
+tests <- testByRandomization(X = X, categ = categ, B)
+testsW <- testByRandomization(X = X, categ = categ, B = 10, rowTestFUN = rowWilcoxonTests)
 
 ## show test statistics
 pch <- 20
@@ -103,7 +106,7 @@ legend("topleft", c("H0", "H1"), pch=pch, col=1:2)
 
 # one-sample data:
 sim <- gaussianSamples(m, rho, n, pi0, SNR=2)
-tests <- testByRandomization(sim$X, B, alternative = "two.sided")
+tests <- testByRandomization(X = sim$X, categ = sim$categ, B, alternative = "two.sided")
 
 ## show test statistics
 pch <- 20
@@ -118,4 +121,6 @@ legend("topleft", c("H0", "H1"), pch = pch, col = 1:2)
 \references{
 Ge, Y., Dudoit, S. and Speed, T.P., 2003. Resampling-based
   multiple testing for microarray data analysis. _Test_, 12(1), pp.1-77.
+
+Blanchard, G., Neuvial, P., & Roquain, E. (2020). Post hoc confidence bounds on false positives using reference families. Annals of Statistics, 48(3), 1281-1303.
 }

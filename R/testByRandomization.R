@@ -4,6 +4,10 @@
 #'
 #' @param X a matrix of \code{m} variables by \code{n} observations
 #'
+#' @param categ An optional numeric vector of \eqn{n} values in \eqn{0, 1}
+#'   specifying the column indices of the first and second samples. If not
+#'   provided, a one-sample test is performed.
+#'   
 #' @param B A numeric value, the number of permutations to be performed
 #'
 #' @param rowTestFUN A (vectorized) test function used in the two-sample case.
@@ -14,9 +18,6 @@
 #'
 #' @param rand.p.value A boolean value: should randomization \eqn{p}-values be
 #'   calculated and returned? Defaults to @FALSE
-#'
-#' @param seed An integer (or NULL) value used as a seed for random number
-#'   generation. If \code{NULL}, no seed is specified
 #'
 #' @details The type of randomization is determined by the column names of
 #'   \code{X}. If these column names have exactly two distinct values, the
@@ -64,6 +65,7 @@
 #'   \item{rand}{A \eqn{m \times B} matrix of randomization \eqn{p}-values (only
 #'   if \code{rand.p.value} is \code{TRUE} )}
 #'}
+#' @references Blanchard, G., Neuvial, P., & Roquain, E. (2020). Post hoc confidence bounds on false positives using reference families. Annals of Statistics, 48(3), 1281-1303.
 #'
 #' @examples
 #'
@@ -75,8 +77,10 @@
 #'
 #' ## two-sample data
 #' sim <- gaussianSamples(m, rho, n, pi0, SNR = 2, prob = 0.5)
-#' tests <- testByRandomization(sim$X, B)
-#' testsW <- testByRandomization(sim$X, B = 10, rowTestFUN = rowWilcoxonTests)
+#' X <- sim$X
+#' categ <-sim$categ
+#' tests <- testByRandomization(X = X, categ = categ, B)
+#' testsW <- testByRandomization(X = X, categ = categ, B = 10, rowTestFUN = rowWilcoxonTests)
 #'
 #' ## show test statistics
 #' pch <- 20
@@ -89,7 +93,7 @@
 #' 
 #' # one-sample data:
 #' sim <- gaussianSamples(m, rho, n, pi0, SNR=2)
-#' tests <- testByRandomization(sim$X, B, alternative = "two.sided")
+#' tests <- testByRandomization(X = sim$X, categ = sim$categ, B, alternative = "two.sided")
 #'
 #' ## show test statistics
 #' pch <- 20
@@ -103,33 +107,26 @@
 #' @importFrom matrixStats rowRanks
 #' @export
 #' 
-testByRandomization <- function(X, B, 
+testByRandomization <- function(X, categ, B, 
                                 alternative = c("two.sided", "less", "greater"),
                                 rowTestFUN = rowWelchTests,
-                                rand.p.value = FALSE, seed = NULL){
+                                rand.p.value = FALSE){
     alternative <- match.arg(alternative)
     ## sanity checks
     n <- ncol(X)
-    categ <- colnames(X)
-    categ <- as.factor(categ)
-    cats <- levels(categ)
-    luc <- length(cats)
-    if (luc <= 1 || luc == n) {  
-        # no classes or a single class or sample names given: assuming sign flipping 
+    if (missing(categ) || (length(unique(categ))==1)) {
         flavor <- "flip"
     } else {
-        if (luc == 2) {
+        if (length(unique(categ)) == 2) {
+            stopifnot(all(categ %in% c(0,1)))
             flavor <- "perm"
             tbl <- table(categ)
             if (min(tbl) < 3) {
-                stop("At least 3 elements of each sample are required for two-sample tests")
+                stop("At least 3 observations from each sample are required for two-sample tests")
             }
-        } else if (luc > 2) {
+        } else {
             stop("Tests for more than 2 classes not implemented yet")
         }
-    }
-    if (!is.null(seed)) {
-        set.seed(seed)
     }
     m <- nrow(X)
     
@@ -165,15 +162,15 @@ testByRandomization <- function(X, B,
         ## observed test statistics and p-values
         T <- rowSums(X)/sqrt(n)
         p <- switch(alternative, 
-                    "two.sided" = 2*(1 - pnorm(abs(T))),
-                    "greater" = 1 - pnorm(T),
-                    "less" = pnorm(T))
+                    "two.sided" = 2*(pnorm(abs(T), lower.tail = FALSE)),
+                    "greater" = pnorm(T, lower.tail = FALSE),
+                    "less" = pnorm(T, lower.tail = TRUE))
         ## test statistics under H0
         T0 <- testBySignFlipping(X, B)
         p0 <- switch(alternative, 
-                     "two.sided" = 2*(1 - pnorm(abs(T0))),
-                     "greater" = 1 - pnorm(T0),
-                     "less" = pnorm(T0))
+                     "two.sided" = 2*(pnorm(abs(T0), lower.tail = FALSE)),
+                     "greater" = pnorm(T0, lower.tail = FALSE),
+                     "less" = pnorm(T0, lower.tail = TRUE))
         res <- list(T = T, T0 = T0, p = p, p0 = p0, flavor = flavor)
     }
     
@@ -192,7 +189,6 @@ testByRandomization <- function(X, B,
     return(res)
 }
 
-# not used!
 testBySignFlippingR <- function(X, B) {
     m <- nrow(X)
     n <- ncol(X)
@@ -202,21 +198,6 @@ testBySignFlippingR <- function(X, B) {
         eps <- rbinom(n, 1, prob = 0.5)*2 - 1  ## signs
         eX <- sweep(X, MARGIN = 2, STATS = eps, FUN = `*`)
         Tb <- rowSums(eX)/sqrt(n)
-        T[, bb] <- Tb
-    }
-    T
-}
-
-# not used!
-testByPermutationR <- function(X, categ, B) {
-    m <- nrow(X)
-    n <- ncol(X)
-    stopifnot(n == length(categ))
-    
-    T <- matrix(nrow = m, ncol = B)
-    for (bb in 1:B) {
-        categ_perm <- sample(categ, length(categ))
-        Tb <- rowWelchTests(X, categ = categ_perm)$statistic
         T[, bb] <- Tb
     }
     T

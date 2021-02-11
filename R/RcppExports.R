@@ -161,6 +161,10 @@ Em_tot_01 <- function(m, A, Pi, f0x, f1x, x, eps, maxit, h) {
     .Call('_sansSouci_Em_tot_01', PACKAGE = 'sansSouci', m, A, Pi, f0x, f1x, x, eps, maxit, h)
 }
 
+colSort <- function(X) {
+    .Call('_sansSouci_colSort', PACKAGE = 'sansSouci', X)
+}
+
 empiricalCoverageO <- function(thr, Z) {
     .Call('_sansSouci_empiricalCoverageO', PACKAGE = 'sansSouci', thr, Z)
 }

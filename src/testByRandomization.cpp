@@ -1,11 +1,12 @@
 #include <RcppArmadillo.h>
+#include <Rcpp.h>
 using namespace Rcpp;
 
 // [[Rcpp::export]]
 arma::mat testBySignFlipping(arma::mat X, double B) {
     int m = X.n_rows;
     int n = X.n_cols;
-
+    
     arma::mat T(m, B, arma::fill::zeros);
     arma::vec eps, Tb;
     X = X / sqrt(n);    // scaling
@@ -15,13 +16,13 @@ arma::mat testBySignFlipping(arma::mat X, double B) {
         Tb = X * eps;
         T.col(bb) = Tb;
     }
-   return(T);
+    return(T);
 }
 
 
 arma::mat testByPermutation(arma::mat X, NumericVector cls, double B) {
     int m = X.n_rows;
-//    int n = X.n_cols;
+    //    int n = X.n_cols;
     arma::mat T(m, B, arma::fill::zeros);
     
     // arma::vec eps;
@@ -57,5 +58,4 @@ max(abs(T-TR))
 # set.seed(123)
 # TR <- testByPermutationR(X, cls, B)
 # max(abs(T-TR))
-
 */

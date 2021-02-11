@@ -12,15 +12,15 @@
 #' @param mat A numeric matrix whose rows correspond to variables and columns to
 #'   observations
 #'
-#' @param categ A vector of \code{ncol(mat)} categories in \eqn{'0','1'} for the
+#' @param categ A numeric vector of \code{ncol(mat)} categories in \eqn{0, 1} for the
 #'   observations
 #'
 #' @param alternative A character string specifying the alternative hypothesis.
 #'   Must be one of "two.sided" (default), "greater" or "less". As in
-#'   \code{\link{t.test}}, alternative = "greater" is the alternative that the
-#'   class '1' has a larger mean than the class '0'.
+#'   \code{\link{t.test}}, alternative = "greater" is the alternative that
+#'   class 1 has a larger mean than class 0.
 #'
-#' @return A list with class "htest" containing the following components:
+#' @return A data.frame with containing the following columns:
 #'   \describe{ \item{statistic}{the value of the t-statistics}
 #'   \item{parameter}{the degrees of freedom for the t-statistics}
 #'   \item{p.value}{the p-values for the tests}} \item{meanDiff}{the mean
@@ -37,13 +37,13 @@
 #' p <- 1e3
 #' n <- 38
 #' mat <- matrix(rnorm(p*n), ncol=n)
-#' cls <- rep(c(0, 1), times=c(27, n-27))
-#' fwt <- rowWelchTests(mat, categ=cls, alternative = "greater")
+#' categ <- rep(c(0, 1), times=c(27, n-27))
+#' fwt <- rowWelchTests(mat, categ, alternative = "greater")
 #' str(fwt)
 #'
 #' # compare with ordinary t.test:
 #' pwt <- apply(mat, 1, FUN=function(x) {
-#'    t.test(x[cls==1], x[cls==0], alternative = "greater")$p.value
+#'    t.test(x[categ==1], x[categ==0], alternative = "greater")$p.value
 #' })
 #' all(abs(fwt$p.value-pwt) < 1e-10)  ## same results
 #' 
@@ -60,7 +60,7 @@ rowWelchTests <- function(mat, categ, alternative = c("two.sided", "less", "grea
                          X[["sd"]], Y[["sd"]],
                          X[["n"]], Y[["n"]],
                          alternative = alternative)
-    swt[["meanDiff"]] <- X[["mean"]] - Y[["mean"]]
+    swt$meanDiff <- X[["mean"]] - Y[["mean"]]
     swt
 }
 

@@ -96,6 +96,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// colSort
+arma::mat colSort(arma::mat X);
+RcppExport SEXP _sansSouci_colSort(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(colSort(X));
+    return rcpp_result_gen;
+END_RCPP
+}
 // empiricalCoverageO
 NumericVector empiricalCoverageO(NumericVector thr, arma::mat Z);
 RcppExport SEXP _sansSouci_empiricalCoverageO(SEXP thrSEXP, SEXP ZSEXP) {
@@ -327,6 +338,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sansSouci_Em_f1", (DL_FUNC) &_sansSouci_Em_f1, 10},
     {"_sansSouci_Em_tot", (DL_FUNC) &_sansSouci_Em_tot, 9},
     {"_sansSouci_Em_tot_01", (DL_FUNC) &_sansSouci_Em_tot_01, 9},
+    {"_sansSouci_colSort", (DL_FUNC) &_sansSouci_colSort, 1},
     {"_sansSouci_empiricalCoverageO", (DL_FUNC) &_sansSouci_empiricalCoverageO, 2},
     {"_sansSouci_get_A", (DL_FUNC) &_sansSouci_get_A, 7},
     {"_sansSouci_get_L1", (DL_FUNC) &_sansSouci_get_L1, 6},

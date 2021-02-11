@@ -15,5 +15,13 @@ appveyor.yml
 ^Rout$
 ^results$
 ^data/.*\.rds$
+^nilearn_cache/
 
-TODO.txt
+TODO*.txt
+^doc$
+^Meta$
+^\.github$
+^_pkgdown\.yml$
+^pkgdown$
+^README\.Rmd$
+^codecov\.yml$
