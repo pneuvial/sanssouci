@@ -1,4 +1,7 @@
 
+
+
+
 #' Title
 #'
 #' @param m 
@@ -45,13 +48,22 @@
 #'  norm_init = TRUE, df= 2, num_seed= 1234, type_init="given", f0_known=FALSE, 
 #'  approx = TRUE)
 
-simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
+simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr,
                      b_act, d, seuil,
                      h =0.3,  n_boot, min_size, norm, m0, sd0, df,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999, 
-                     type_init, num_seed, f0_known, approx) {
+                     type_init, num_seed, f0_known, approx, all =FALSE,
+                     size_b0= 300, pct_b1 =1/3, include_H0 = FALSE) {
   set.seed(num_seed)
-  theta <- sim_markov(m,Pi, A)
+  if(type_sim =="HMM"){
+    theta <- sim_markov(m, Pi, A)
+  }
+if(type_sim =="block"){
+  theta <- rep(rep(0:1, c(size_b0, size_b0*pct_b1)),m/(size_b0(1+pct_b1))) 
+  nb0 <-  m / (1+pct_b1)
+  nb1 <- m - nb0
+  A <- matrix(c((nb0-8)/(nb0-1), (8)/(nb0-1),(7)/(nb1-1),(nb1-7)/(nb1-1)), ncol =2, byrow = TRUE)
+}
   x <- rep(0, m)
   if(norm){
     x[theta == 0] <- rnorm(sum(theta ==0), m0, sd0)
@@ -92,55 +104,90 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
   
   ## Pour HMM est
   
-  if(norm_init){
-    f0x_est <- dnorm(x, m0_init, sd0_init)
-  }else{
-    f0x_est <- dt(x, df_init)
-  }
-  pi0_hat <- max(min(sum(pval > 0.8) / (m * 0.2), max_pi0), 0.6)
-  f_hatx <- x %>%
-    map_dbl( ~f_hatK(x, ., h = h,K) )
-  f1x_est <-  f1x_hat(f0x_est, f_hatx, pi0_hat)
-  f1x_est[f1x_est <= 0] <- min(f0x_est)
-  mini <- max(0.6, ((1 + max_pi0) * pi0_hat -max_pi0) / pi0_hat)
-  a <-runif(1, mini, max_pi0)
-  b <- 1 - a
-  c <- pi0_hat * b / (1 - pi0_hat)
-  d <- 1 - c
-  Em <- Em(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
-                  Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est, f1x = f1x_est,
-                  x, eps = 0.0001,
-                  maxit =1000, h = h, f0_known = f0_known, approx = approx)
-  # if(Em$A[1,1] > Em$A[2,2]){ 
-    
-    A_est <- Em$A
-    Pi_est <-Em$Pi
-    f0x_est <- Em$f0x
-    f1x_est <- Em$f1x
-    fw_bc_EM <- Em$fw_bc_EM
-  # }else{ 
-    A_est <- Em$A[2:1,2:1]
-    Pi_est <-Em$Pi[2:1]
-    f0x_est <- Em$f1x
-    f1x_est <- Em$f0x
-    fw_bc_EM <- for_back(m, A_est,f0x_est, f1x_est, Pi_est)
-  # }
+  Est <- Estimation( x, h =h,
+                         m0_init, sd0_init, df_init, norm_init, max_pi0= max_pi0, 
+                         f0_known = f0_known, f0x_est = NULL, pval = NULL, 
+                         plot = FALSE, size_plot= min(10000, length(x)), 
+                         approx = approx)
+  
+  
+  A_est <- Est$Em$A
+  Pi_est <- Est$Em$Pi
+  H0 <- sum(theta == 0)
+  H1 <- sum(theta == 1)
+  Sel <- Selection_tibble(x, Est$Em$fw_bc_EM, seuil, A_est, 
+                          f0x_est =Est$Em$f0x , 
+                          f1x_est= Est$Em$f1x, Pi_est, min_size, all = all ) 
   
   Pis_est <- lapply(2:m, function(i){
-    get_A( m,alpha = fw_bc_EM$alpha, beta = fw_bc_EM$beta, A_est, f0x_est, 
-           f1x_est, i = i)
+    get_A( m,alpha = Est$Em$fw_bc_EM$alpha, beta = Est$Em$fw_bc_EM$beta,
+           A_est, f0x =Est$Em$f0x ,
+           f1x= Est$Em$f1x, i = i)
   })
+  
+  # 
+  # Estimation (x,  h =0.3,
+  #                        m0_init, sd0_init, df_init, norm_init, max_pi0, 
+  #                        f0_known = TRUE, f0x_est = NULL, pval = NULL, 
+  #                        plot = FALSE, size_plot= min(10000, length(x)), 
+  #                        approx = TRUE)
+  # if(norm_init){
+  #   f0x_est <- dnorm(x, m0_init, sd0_init)
+  # }else{
+  #   f0x_est <- dt(x, df_init)
+  # }
+  # pi0_hat <- max(min(sum(pval > 0.8) / (m * 0.2), max_pi0), 0.6)
+  # # f_hatx <- x %>%
+  # #   map_dbl( ~f_hatK(x, ., h = h,K) ) ## 
+  # 
+  # if(approx){
+  #   d <- density(x,bw = h)
+  #   f_hatx <- approx(d$x,d$y,x)$y
+  # }else {
+  #   f_hatx <- x %>%
+  #     map_dbl( ~f_hatK(x, ., h = h,K) )
+  # }
+  # 
+  # f1x_est <-  f1x_hat(f0x_est, f_hatx, pi0_hat)
+  # f1x_est[f1x_est <= 0] <- min(f0x_est)
+  # mini <- max(0.6, ((1 + max_pi0) * pi0_hat -max_pi0) / pi0_hat)
+  # a <-runif(1, mini, max_pi0)
+  # b <- 1 - a
+  # c <- pi0_hat * b / (1 - pi0_hat)
+  # d <- 1 - c
+  # Em <- Em(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
+  #                 Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est, f1x = f1x_est,
+  #                 x, eps = 0.0001,
+  #                 maxit =1000, h = h, f0_known = f0_known, approx = approx)
+  # # if(Em$A[1,1] > Em$A[2,2]){ 
+  #   
+  #   A_est <- Em$A
+  #   Pi_est <-Em$Pi
+  #   f0x_est <- Em$f0x
+  #   f1x_est <- Em$f1x
+  #   fw_bc_EM <- Em$fw_bc_EM
+  # # }else{ 
+  #   A_est <- Em$A[2:1,2:1]
+  #   Pi_est <-Em$Pi[2:1]
+  #   f0x_est <- Em$f1x
+  #   f1x_est <- Em$f0x
+  #   fw_bc_EM <- for_back(m, A_est,f0x_est, f1x_est, Pi_est)
+  # # }
+  # 
+  # Pis_est <- lapply(2:m, function(i){
+  #   get_A( m,alpha = fw_bc_EM$alpha, beta = fw_bc_EM$beta, A_est, f0x_est, 
+  #          f1x_est, i = i)
+  # })
   if(f0_known){
     boots_param <- boots_param_known_f0
   }else{
     boots_param <- boots_param_unknown_f0
   }
- Sel <- Selection_tibble(x, fw_bc_EM, seuil, A_est, f0x_est, f1x_est, Pi_est, min_size)
-   ### Pour Estimer bootstrap : 
+    ### Pour Estimer bootstrap : 
   boots <- enframe( x = 1:n_boot, name = NULL, value = "id_boot") %>% 
     mutate(HMM_boot = map(id_boot, ~boots_param(A_est, Pi_est, 
                                                 x_from = x,
-                                                prob1 = fw_bc_EM$gamma[,2], h, 
+                                                prob1 = Est$Em$fw_bc_EM$gamma[,2], h, 
                                                 Sel, al, 
                                                 seuil, 
                                                 min_size,b_act*s_dbnr, 
@@ -171,30 +218,25 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim, al, s_dbnr,
       sd0_init_est = sd0_init, 
       m0_init_est = m0_init,
       Det_A_est = Det_a,
-      IC_or_aldemi = map(Sel,~get_IC(sel = ., li0 = fw_bc_or$gamma[,1],
-                                      Pis = Pis_or, f0x =f0x ,
-                                      f1x= f1x, alpha = al/2)),
       IC_or = map(Sel,~get_IC(sel = ., li0 = fw_bc_or$gamma[,1],
                               Pis = Pis_or, f0x =f0x ,
                               f1x= f1x, alpha = al)),
-      IC_est_aldemi = map(Sel,~get_IC(sel = ., li0 = fw_bc_EM$gamma[,1],
-                                      Pis = Pis_est, f0x =f0x_est ,
-                                      f1x= f1x_est, alpha = al/2)),
-      IC_est = map(Sel,~get_IC(sel = ., li0 = fw_bc_EM$gamma[,1],
-                               Pis = Pis_est, f0x =f0x_est ,
-                               f1x= f1x_est, alpha = al)),
+      IC_est_aldemi = map(Sel,~get_IC(sel = ., li0 = Est$Em$fw_bc_EM$gamma[,1],
+                                      Pis = Pis_est, f0x =Est$Em$f0x ,
+                                      f1x= Est$Em$f1x, alpha = al/2)),
+      IC_est = map(Sel,~get_IC(sel = ., li0 = Est$Em$fw_bc_EM$gamma[,1],
+                               Pis = Pis_est, f0x =Est$Em$f0x ,
+                               f1x= Est$Em$f1x, alpha = al)),
       V_simes = map_dbl(Sel,~borne ( type_borne = "Simes", sel = ., m = m,
                                      pval = pval, alpha = al)
       ),
-      V_HMM_or_aldemi =  map_dbl(IC_or_aldemi,~.[2]),
-      V_HMM_small_or_aldemi =  map_dbl(IC_or_aldemi,~.[1]),
       V_HMM_small_or =  map_dbl(IC_or,~.[1]),
       V_HMM_or =  map_dbl(IC_or,~.[2]),
       V_HMM_est_aldemi =  map_dbl(IC_est_aldemi,~.[2]),
       V_HMM_small_est_aldemi =  map_dbl(IC_est_aldemi,~.[1]),
       V_HMM_small_est =  map_dbl(IC_est,~.[1]),
       V_HMM_est =  map_dbl(IC_est,~.[2]),
-      FDR_est = map_dbl(Sel, ~sum( fw_bc_EM$gamma[.,1])),
+      FDR_est = map_dbl(Sel, ~sum( Est$Em$fw_bc_EM$gamma[.,1])),
       FDR_or  = map_dbl(Sel, ~sum(fw_bc_or$gamma[.,1])),
       V_real = map_dbl(Sel , ~sum(theta[.] == 0))
     ) %>%

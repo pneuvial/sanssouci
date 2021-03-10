@@ -37,7 +37,7 @@ pval_m <-function(x, p0){
 Selection_tibble <- function(x, fw_bc, seuil, A_est,
                              f0x_est, f1x_est, Pi_est, min_size, 
                              min_jump = NULL,
-                             pval = NULL){
+                             pval = NULL, all = FALSE){
   
   m <- length(x)
   
@@ -70,7 +70,7 @@ Selection_tibble <- function(x, fw_bc, seuil, A_est,
   pval <- pval_m(x, fw_bc$gamma[,1])
   }
   pvalm_tresh <- which(pval < seuil)
-  
+  if(all){
   Sel <- tibble( Sel = list(
     1:m,
     pvalm_tresh,
@@ -84,4 +84,19 @@ Selection_tibble <- function(x, fw_bc, seuil, A_est,
             "sel_viter_min_size"
     )) %>%
     mutate(Size = map_dbl(Sel,~length(.)))
+  }else{
+    
+    Sel <- tibble( Sel = list(
+      pvalm_tresh,
+      sel_sc, 
+      sel_viter_est,
+      sel_viter_min_size),
+      Nom = c(
+              "pval_tresh",
+              "lfdr_tresh", 
+              "sel_viter_est",
+              "sel_viter_min_size"
+      )) %>%
+      mutate(Size = map_dbl(Sel,~length(.)))
+  }
 }
