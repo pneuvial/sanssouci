@@ -59,7 +59,7 @@ simu_tot <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr,
     theta <- sim_markov(m, Pi, A)
   }
 if(type_sim =="block"){
-  theta <- rep(rep(0:1, c(size_b0, size_b0*pct_b1)),m/(size_b0(1+pct_b1))) 
+  theta <- rep(rep(0:1, c(size_b0, size_b0*pct_b1)),m/(size_b0*(1+pct_b1))) 
   nb0 <-  m / (1+pct_b1)
   nb1 <- m - nb0
   A <- matrix(c((nb0-8)/(nb0-1), (8)/(nb0-1),(7)/(nb1-1),(nb1-7)/(nb1-1)), ncol =2, byrow = TRUE)

@@ -66,7 +66,7 @@ d <- 1 - c
 Em <- Em(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
                 Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est, f1x = f1x_est,
                 x, eps = 0.0001,
-                maxit =1000, h = h, f0_known)
+                maxit =1000, h = h, f0_known, approx = approx)
 
 p <- NULL
 if(plot){
