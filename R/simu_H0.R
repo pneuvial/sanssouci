@@ -422,7 +422,7 @@ knowledge_boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel
           A_est_star, f0x_from, f1x_from, i = i)
   })
   Sel <- Selection_add_knowledge(x, fw_bc_EM_star, seuil, A_est_star, 
-                          f0x_est_star, f1x_est_star, Pi_est_sar, min_size) %>% 
+                          f0x_est_star, f1x_est_star, Pi_est_sar, min_size,H0) %>% 
     rename(Size_boot = Size)
   Sel_boot <- Sel %>% full_join(Sel_from, by = "Nom") %>%
     mutate(IC_from = map(Sel_from, 
@@ -571,7 +571,7 @@ simu_tot_H0 <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbn
  H0 <- (theta==0)
   Sel <- Selection_add_knowledge(x, Est$Em$fw_bc_EM, seuil, A_est, 
                           f0x_est =Est$Em$f0x , 
-                          f1x_est= Est$Em$f1x, Pi_est, min_size, all = all ) 
+                          f1x_est= Est$Em$f1x, Pi_est, min_size, all = all ,H0) 
   
   Pis_est <- lapply(2:m, function(i){
     get_A( m,alpha = Est$Em$fw_bc_EM$alpha, beta = Est$Em$fw_bc_EM$beta,
