@@ -109,6 +109,8 @@ boots_param_unknown_f0 <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, a
   f1x_est_star <- Em$f1x
   f0x_est_star <- Em$f0x
   fw_bc_EM_star <- Em$fw_bc_EM
+  rm(Em)
+  gc()
   # }else{ 
   #   A_est_star <- Em$A[2:1,2:1]
   #   Pi_est_sar <-Em$Pi[2:1]
@@ -241,7 +243,7 @@ boots_param_unknown_f0 <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, a
 #' @examples
 boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil, 
                                   min_size, n, max_pi0, m0_init, sd0_init, df_init, norm_init, 
-                                  type_init, approx) 
+                                  type_init, approx, maxit=100) 
 {
   Sel_from <- Sel_from %>% rename(Sel_from = Sel)
   m <- length(x_from)
@@ -249,6 +251,8 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
                                       prob1, h, n)
   theta <- Data_temp$theta
   x <- Data_temp$x
+  rm(Data_temp)
+  gc()
   if (norm_init) {
     pval <- 2 * (1 - pnorm(abs(x), m0_init, sd0_init))
   }
@@ -277,6 +281,8 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
       sum(K((x_from - xi)/h) * prob1)/sum(h * prob1)
     })
     f1x <- approx(d1$x, f1x_first, x)$y
+    rm(f1x_first)
+    gc()
   }
   else {
     f1x <- sapply(x, function(xi) {
@@ -310,13 +316,15 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
   Em <- Em(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol = 2), 
            Pi = c(pi0_hat, 1 - pi0_hat), f0x = f0x_est_star, 
            f1x = f1x_est_star, 
-           x, eps = 1e-04, maxit = 1000, h = h, f0_known = TRUE, 
+           x, eps = 1e-04, maxit = maxit, h = h, f0_known = TRUE, 
            approx)
   A_est_star <- Em$A
   Pi_est_sar <- Em$Pi
   f1x_est_star <- Em$f1x
   f0x_est_star <- f0x
   fw_bc_EM_star <- Em$fw_bc_EM
+  rm(Em)
+  gc()
   Pis_est_star <- lapply(2:m, function(i) {
     get_A(m, alpha = fw_bc_EM_star$alpha, beta = fw_bc_EM_star$beta, 
           A_est_star, f0x_est_star, f1x_est_star, i = i)
@@ -329,6 +337,8 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
       sum(K((x - xi)/h) * gamma_EM_star1)/sum(h * gamma_EM_star1)
     })
     f1x_from <- approx(d1_from$x, f1x_first, x_from)$y
+    rm(f1x_first)
+    gc()
   }
   else {
     f1x_from <- sapply(x_from, function(xi) {
@@ -345,7 +355,8 @@ boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al,
           A_est_star, f0x_from, f1x_from, i = i)
   })
   Sel <- Selection_tibble(x, fw_bc_EM_star, seuil, A_est_star, 
-                          f0x_est_star, f1x_est_star, Pi_est_sar, min_size) %>% 
+                          f0x_est_star, f1x_est_star, Pi_est_sar, min_size,
+                          pval = pval) %>% 
     rename(Size_boot = Size)
   Sel_boot <- Sel %>% full_join(Sel_from, by = "Nom") %>%
     mutate(IC_from = map(Sel_from, 

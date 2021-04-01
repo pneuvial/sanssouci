@@ -110,14 +110,20 @@ if(type_sim =="block"){
                          plot = FALSE, size_plot= min(10000, length(x)), 
                          approx = approx)
   
-  
+  if(f0_known){
+    pval_don <- pval
+  }else{
+    pval_don = NULL
+  }
   A_est <- Est$Em$A
   Pi_est <- Est$Em$Pi
   H0 <- sum(theta == 0)
   H1 <- sum(theta == 1)
   Sel <- Selection_tibble(x, Est$Em$fw_bc_EM, seuil, A_est, 
                           f0x_est =Est$Em$f0x , 
-                          f1x_est= Est$Em$f1x, Pi_est, min_size, all = all ) 
+                          f1x_est= Est$Em$f1x, Pi_est, min_size, 
+                          pval = pval_don, 
+                          all = all ) 
   
   Pis_est <- lapply(2:m, function(i){
     get_A( m,alpha = Est$Em$fw_bc_EM$alpha, beta = Est$Em$fw_bc_EM$beta,

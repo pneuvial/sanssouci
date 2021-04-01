@@ -30,8 +30,9 @@ borne <- function( type_borne, sel, a, alpha, m,
   if(type_borne == "Simes"){
     # pS <- posthocBySimes(pval, sel, alpha, Rcpp = FALSE, verbose = FALSE) 
     #
-    k_val <- sapply(1:l_sel, function(k){ sum(pval[sel] > alpha * k / m) + k - 1})
-    return( min(k_val))
+    return(min(sapply(1:l_sel, function(k){ sum(pval[sel] > alpha * k / m) +
+        k - 1})))
+    
     # return(length(sel)- pS)
   }
   if(type_borne=="DKW_tree"){

@@ -27,7 +27,7 @@ Estimation <- function(x,  h =0.3,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999, 
                      f0_known = TRUE, f0x_est = NULL, pval = NULL, 
                      plot = FALSE, size_plot= min(10000, length(x)), 
-                     approx = TRUE){
+                     approx = TRUE, maxit = 100){
   m <- length(x)
   
 if(is.null(f0x_est)){
@@ -66,7 +66,7 @@ d <- 1 - c
 Em <- Em(m, A = matrix(c(a, b, c, d), byrow = TRUE, ncol=2),
                 Pi= c(pi0_hat, 1 -pi0_hat),  f0x = f0x_est, f1x = f1x_est,
                 x, eps = 0.0001,
-                maxit =1000, h = h, f0_known, approx = approx)
+                maxit =maxit, h = h, f0_known, approx = approx)
 
 p <- NULL
 if(plot){

@@ -70,7 +70,8 @@ sim_hmm_from_weightkde <- function( A, Pi,  x_from, prob1, h,n ){
   ## generating theta :
   theta[1] <- rbinom(1, 1, Pi[2])
   for (i in 2:m)
-  { theta[i] <- (1-theta[i-1])*rbinom(1, 1, A[1, 2]) + theta[i-1]*rbinom(1, 1, A[2, 2])
+  { theta[i] <- (1-theta[i-1])*rbinom(1, 1, A[1, 2]) + 
+    theta[i-1]*rbinom(1, 1, A[2, 2])
   }
   
   
@@ -78,9 +79,11 @@ sim_hmm_from_weightkde <- function( A, Pi,  x_from, prob1, h,n ){
   { nb.ind <- sum(theta==ind)
   if (nb.ind>0) {
     if (ind == 0){
-      x[theta==ind] <-  sample(x_from, nb.ind, replace = TRUE, prob  = 1- prob1) + rnorm(nb.ind, sd = h)
+      x[theta==ind] <-  sample(x_from, nb.ind, replace = TRUE, prob  = 1- prob1) + 
+        rnorm(nb.ind, sd = h)
     } else{
-      x[theta==ind] <-  sample(x_from, nb.ind, replace = TRUE, prob  = prob1) +rnorm(nb.ind, sd = h)
+      x[theta==ind] <-  sample(x_from, nb.ind, replace = TRUE, prob  = prob1) +
+        rnorm(nb.ind, sd = h)
     }
     
   }
