@@ -43,6 +43,7 @@ get_quantiles <- function(sel, li0, Pis, f0x, f1x){
 #'
 #' @examples
 #'  m <-  100
+#'  Pi <- c(0.8,0.2)
 #'  A <- matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T)
 #'    rdata <- sim_hmm_2states(m, Pi, A, f0 = c(0,1), f1= c(2,1))
 #'   x <- rdata$x
@@ -78,5 +79,43 @@ get_IC <- function(sel, li0, Pis, f0x, f1x, alpha){
                   Pis_sel)  
     
     return(IC)
+  }
+}
+
+
+#' Title
+#'
+#' @param sel 
+#' @param li0 
+#' @param Pis 
+#' @param f0x 
+#' @param f1x 
+#' @param probs 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_probs <- function(sel, li0, Pis, f0x, f1x, probs){
+  if(length(sel)< 2) {
+    return(NA)
+  }else{
+    Pis_sel <- lapply(1:(length(sel)-1), function(i){
+      Reduce("%*%", Pis[sel[i]: (sel[i +1]-1)])
+    })
+    l_sel <- length(sel)
+    probs_ord <- sort(probs)
+    petit_grand <- rep(0, length(probs))
+    petit_grand[probs_ord <0.5] <- 1
+    Probs <- getprobs( length(sel),  
+                       probs_ord, 
+                       length(probs),
+                       petit_grand,
+                       li0 = li0[sel], 
+                       f0x[sel],
+                       f1x[sel],
+                       Pis_sel)
+    Probs_ord <- Probs[order(order(probs))]
+    return(Probs_ord)
   }
 }

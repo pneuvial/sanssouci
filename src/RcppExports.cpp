@@ -199,6 +199,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getprobs
+arma::vec getprobs(int m, arma::vec prob, int size_prob, arma::vec petit_grand, arma::vec li0, arma::vec f0x, arma::vec f1x, Rcpp::List Pis);
+RcppExport SEXP _sansSouci_getprobs(SEXP mSEXP, SEXP probSEXP, SEXP size_probSEXP, SEXP petit_grandSEXP, SEXP li0SEXP, SEXP f0xSEXP, SEXP f1xSEXP, SEXP PisSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type prob(probSEXP);
+    Rcpp::traits::input_parameter< int >::type size_prob(size_probSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type petit_grand(petit_grandSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type li0(li0SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type f0x(f0xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type f1x(f1xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type Pis(PisSEXP);
+    rcpp_result_gen = Rcpp::wrap(getprobs(m, prob, size_prob, petit_grand, li0, f0x, f1x, Pis));
+    return rcpp_result_gen;
+END_RCPP
+}
 // marginalKFWER
 NumericVector marginalKFWER(NumericVector thr, arma::mat Z);
 RcppExport SEXP _sansSouci_marginalKFWER(SEXP thrSEXP, SEXP ZSEXP) {
@@ -345,6 +363,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sansSouci_getA01", (DL_FUNC) &_sansSouci_getA01, 5},
     {"_sansSouci_getbound", (DL_FUNC) &_sansSouci_getbound, 6},
     {"_sansSouci_getIC", (DL_FUNC) &_sansSouci_getIC, 6},
+    {"_sansSouci_getprobs", (DL_FUNC) &_sansSouci_getprobs, 8},
     {"_sansSouci_marginalKFWER", (DL_FUNC) &_sansSouci_marginalKFWER, 2},
     {"_sansSouci_minPseudoRanks", (DL_FUNC) &_sansSouci_minPseudoRanks, 2},
     {"_sansSouci_partialColSortDescCpp", (DL_FUNC) &_sansSouci_partialColSortDescCpp, 2},

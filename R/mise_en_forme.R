@@ -260,7 +260,8 @@ res_FDR <- function(Result_hmm_boot, seuil, min_size ){
                        Nom == "lfdr_tresh" ~  glue("S(X) == SC(",seuil,")"),
                        Nom == "lfdr_tresh_pval" ~  "S(X) == SC(FDR[p])",
                        Nom == "lfdr_tresh_viter"~  "S(X) == SC(FDR[v])",
-                       Nom == "block" ~ "S(X) ==bgroup('{','1, ..., 200' ,'}')"), 
+                       Nom == "block" ~ "S(X) ==bgroup('{','1, ..., 200' ,'}')",
+                       Nom == "all" ~ "All"), 
       Nom = factor(Nom, levels = c(glue("S(X) == bgroup({var1},p <", seuil,",{var2})"),
                                    "S(X) == SC(FDR[p])",
                                    glue("S(X) == SC(",seuil,")"), 
@@ -272,7 +273,8 @@ res_FDR <- function(Result_hmm_boot, seuil, min_size ){
                                    "S(X) ==bgroup('{','1, ..., 200' ,'}')",
                                    "S(X) == H1",
                                    "S(X) ==H0~intersect()~ bgroup('{',p < 0.05 ,'}')", 
-                                   "S(X) ==H0~intersect()~bgroup('{',viterbi == 1 ,'}')"))
+                                   "S(X) ==H0~intersect()~bgroup('{',viterbi == 1 ,'}')",
+                                   "All"))
     ) 
   return(Res_all) 
 }
