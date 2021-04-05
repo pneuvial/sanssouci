@@ -266,7 +266,7 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
                      h =0.3,  n_boot, min_size, norm, m0, sd0, df,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999, 
                      type_init, num_seed, f0_known, approx, all =FALSE,
-                     size_b0= 300, pct_b1 =1/3, include_H0 = FALSE, prob = c()) {
+                     size_b0= 300, pct_b1 =1/3, include_H0 = FALSE, delta) {
   set.seed(num_seed)
   ## Simuation des données
   if(type_sim =="HMM"){
