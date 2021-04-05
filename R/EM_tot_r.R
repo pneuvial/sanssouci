@@ -149,7 +149,7 @@ Em_tot_approx<- function(m, A, Pi, f0x, f1x,
     
   }
   
-  b_f = for_back(m, y[[6]], f0x, y[[9]], y[[5]]$gamma[1,])
+  b_f = for_back(m, y[[6]], f0x, y[[8]], y[[5]]$gamma[1,])
   return (list(A= A,Pi = Pi,
                fw_bc_EM= b_f,
                f1x = f1x,
