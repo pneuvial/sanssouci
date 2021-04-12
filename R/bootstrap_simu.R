@@ -243,7 +243,7 @@ boots_param_unknown_f0 <- function(A_est,  Pi_est, x_from, prob1, h, Sel_from, a
 #' @examples
 boots_param_known_f0 <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil, 
                                   min_size, n, max_pi0, m0_init, sd0_init, df_init, norm_init, 
-                                  type_init, approx, maxit=100) 
+                                  type_init, approx, maxit=1000) 
 {
   Sel_from <- Sel_from %>% rename(Sel_from = Sel)
   m <- length(x_from)

@@ -27,7 +27,7 @@ Estimation <- function(x,  h =0.3,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999, 
                      f0_known = TRUE, f0x_est = NULL, pval = NULL, 
                      plot = FALSE, size_plot= min(10000, length(x)), 
-                     approx = TRUE, maxit = 100){
+                     approx = TRUE, maxit = 1000){
   m <- length(x)
   
 if(is.null(f0x_est)){
