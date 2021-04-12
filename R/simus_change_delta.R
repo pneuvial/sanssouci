@@ -218,7 +218,9 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
   })
   prob <- c(al/2, 1-al/2,
             al*(1-delta), 1 - al*(1-delta),
-            al, 1-al)
+            al, 1-al,
+            al*(delta), 1 - al*(delta))
+
   Sel_boot <- Sel %>% full_join(Sel_from, by = "Nom") %>%
     mutate(Borne_from = map(Sel_from,
                             ~get_probs(sel = ., li0 = fw_bc_from$gamma[, 1],
@@ -233,18 +235,25 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
            V_HMM_small_oracle_boot = map_dbl(Borne_oracle_boot, ~.[5]),
            V_HMM_oracle_boot_aldemi = map_dbl(Borne_oracle_boot, ~.[2]),
            V_HMM_small_oracle_boot_aldemi = map_dbl(Borne_oracle_boot, ~.[1]),
-           V_HMM_oracle_boot_aldelta = map_dbl(Borne_oracle_boot, ~.[4]),
-           V_HMM_small_oracle_boot_aldelta = map_dbl(Borne_oracle_boot, ~.[3]),
+           V_HMM_oracle_boot_al1_moins_delta = map_dbl(Borne_oracle_boot, ~.[4]),
+           V_HMM_small_oracle_boot_al1_moins_delta = map_dbl(Borne_oracle_boot, ~.[3]),
+           V_HMM_oracle_boot_aldelta = map_dbl(Borne_oracle_boot, ~.[8]),
+           V_HMM_small_oracle_boot_aldelta = map_dbl(Borne_oracle_boot, ~.[7]),
            V_HMM_est_boot_aldemi = map_dbl(Borne_est_boot, ~.[2]),
            V_HMM_small_est_boot_aldemi = map_dbl(Borne_est_boot, ~.[1]),
-           V_HMM_est_boot_aldelta = map_dbl(Borne_est_boot, ~.[4]),
-           V_HMM_small_est_boot_aldelta = map_dbl(Borne_est_boot, ~.[3]),
+           V_HMM_est_boot_aldelta = map_dbl(Borne_est_boot, ~.[8]),
+           V_HMM_small_est_boot_aldelta = map_dbl(Borne_est_boot, ~.[7]),
+           V_HMM_est_boot_al1_moins_delta = map_dbl(Borne_est_boot, ~.[4]),
+           V_HMM_small_est_boot_al1_moins_delta = map_dbl(Borne_est_boot, ~.[3]),
            V_HMM_est_boot = map_dbl(Borne_est_boot, ~.[6]),
            V_HMM_small_est_boot = map_dbl(Borne_est_boot, ~.[5]),
            V_HMM_est_boot_aldemi_samesel = map_dbl(Borne_from, ~.[2]),
            V_HMM_small_est_boot_aldemi_samesel = map_dbl(Borne_from, ~.[1]),
            V_HMM_est_boot_aldelta_samesel = map_dbl(Borne_from, ~.[4]),
            V_HMM_small_est_boot_aldelta_samesel = map_dbl(Borne_from, ~.[3]),
+           
+           V_HMM_est_boot_al1_moins_delta_samesel = map_dbl(Borne_from, ~.[8]),
+           V_HMM_small_est_boot_al1_moins_delta_samesel = map_dbl(Borne_from, ~.[7]),
            V_HMM_est_boot_samesel = map_dbl(Borne_from, ~.[6]),
            V_HMM_small_est_boot_samesel = map_dbl(Borne_from, ~.[5]),
            Espe = map_dbl(Sel, ~sum(fw_bc_or_star$gamma[.,1])),
@@ -313,7 +322,8 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
                        h =0.3,  n_boot, min_size, norm, m0, sd0, df,
                        m0_init, sd0_init, df_init, norm_init, max_pi0= 0.99999,
                        type_init, num_seed, f0_known, approx, all =FALSE,
-                       size_b0= 300, pct_b1 =1/3, include_H0 = FALSE, delta) {
+                       size_b0= 300, pct_b1 =1/3, include_H0 = FALSE, delta, n_seg, 
+                       drop1, drop2, tumorFraction) {
   set.seed(num_seed)
   ## Simuation des données
   if(type_sim =="HMM"){
@@ -326,13 +336,41 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
     nb1 <- m - nb0
     A <- matrix(c((nb0-8)/(nb0-1), (8)/(nb0-1),(7)/(nb1-1),(nb1-7)/(nb1-1)), ncol =2, byrow = TRUE)
   }
-  x <- rep(0, m)
-  if(norm){
-    x[theta == 0] <- rnorm(sum(theta ==0), m0, sd0)
-    x[theta == 1] <- rnorm(sum(theta ==1), SNR*sd0 + m0, sd0)
-  }else{
-    x[theta == 0] <- rt(sum(theta ==0),df)
-    x[theta == 1] <- rt(sum(theta ==1),df) + SNR
+  if (type_sim == "realistic") {
+    realistic <-
+      sim_realistic(len = m,
+                    n_seg = n_seg,
+                    drop1,
+                    drop2,
+                    tumorFraction)
+    theta <- realistic$theta
+    x <- realistic$w
+    rm(realistic)
+    gc()
+    thet_deb <- theta[-m]
+    thet_fin <- theta[-1]
+    nb00 <- sum((thet_deb - thet_fin + 1) * (1 - thet_deb))
+    nb11 <- sum(-(thet_deb - thet_fin - 1) * (thet_deb))
+    nb0  <- sum(1 - theta)
+    nb1 <- sum(theta)
+    A <-
+      matrix(
+        c(nb00 / nb0, 1 -  nb00 / nb0, 1 - nb11 / nb1,  nb11 / nb1),
+        byrow = TRUE,
+        ncol = 2
+      )
+  }
+  if (type_sim != "realistic") {
+    x <- rep(0, m)
+    if (norm) {
+      x[theta == 0] <- rnorm(sum(theta == 0), m0, sd0)
+      x[theta == 1] <- rnorm(sum(theta == 1), SNR * sd0 + m0,
+                             sd0)
+    }
+    else {
+      x[theta == 0] <- rt(sum(theta == 0), df)
+      x[theta == 1] <- rt(sum(theta == 1), df) + SNR
+    }
   }
 
   if(type_init == "locfdr"){
@@ -437,7 +475,8 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
                                      Pis = Pis_est, f0x =Est$Em$f0x ,
                                      f1x= Est$Em$f1x, probs = c(al/2, 1-al/2,
                                                                 al, 1-al,
-                                                                al*(1-delta), 1 - al*(1-delta)))),
+                                                                al*(1-delta), 1 - al*(1-delta), 
+                                                                al*(delta), 1 - al*(delta)))),
       V_simes = map_dbl(Sel,~borne ( type_borne = "Simes", sel = ., m = m,
                                      pval = pval, alpha = al)
       ),
@@ -445,8 +484,10 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
       V_HMM_or =  map_dbl(IC_or,~.[2]),
       V_HMM_est_aldemi =  map_dbl(Borne_est,~.[2]),
       V_HMM_small_est_aldemi =  map_dbl(Borne_est,~.[1]),
-      V_HMM_est_aldelta =  map_dbl(Borne_est,~.[6]),
-      V_HMM_small_est_aldelta =  map_dbl(Borne_est,~.[5]),
+      V_HMM_est_aldelta =  map_dbl(Borne_est,~.[7]),
+      V_HMM_small_est_aldelta =  map_dbl(Borne_est,~.[8]),
+      V_HMM_est_al1_moins_delta =  map_dbl(Borne_est,~.[6]),
+      V_HMM_small_est_al1_moins_delta =  map_dbl(Borne_est,~.[5]),
       V_HMM_small_est =  map_dbl(Borne_est,~.[3]),
       V_HMM_est =  map_dbl(Borne_est,~.[4]),
       FDR_est = map_dbl(Sel, ~sum( Est$Em$fw_bc_EM$gamma[.,1])),
@@ -457,7 +498,7 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
     left_join(boots, by = c("Nom"))
 
   return(Final)
-}
+} 
 
 
 
