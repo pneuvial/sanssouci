@@ -33,6 +33,12 @@ Selection_delta <- function(x, fw_bc, seuil, A_est,
 
   sel_sc <- LIS$name
   
+  
+  viterbi <- viterbi_log(m, log(A_est), log(f0x_est),
+                         log(f1x_est), log(Pi_est))
+  
+  
+  sel_viter_min_size <- long_reg(viterbi, min_size)
 
   sel_viter_est <- which(viterbi == 1)
   if(is.null(pval)){
@@ -45,11 +51,15 @@ Selection_delta <- function(x, fw_bc, seuil, A_est,
   Sel <- tibble( Sel = list(
     pvalm_sel,
     pvalm_tresh,
-    sel_sc),
+    sel_sc,
+    sel_viter_est,
+    sel_viter_min_size),
     Nom = c(
       "pvalm_sel",
       "pval_tresh",
-      "lfdr_tresh")) %>%
+      "lfdr_tresh",
+      "sel_viter_est",
+      "sel_viter_min_size")) %>%
     mutate(Size = map_dbl(Sel,~length(.)))
 }
 
@@ -190,13 +200,13 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
                          all = all ) %>%
     rename(Size_boot = Size)
   Pis_est_star <- lapply(2:m, function(i) {
-    get_A(m, alpha = Est$fw_bc_EM$alpha, beta = Est$fw_bc_EM$beta,
+    get_A(m, alpha = Est$Em$fw_bc_EM$alpha, beta = Est$Em$fw_bc_EM$beta,
           A_est, Est$Em$f0x, Est$Em$f1x, i = i)
   })
   if (approx) {
     d1_from <- density(x_from)
     f1x_first <- sapply(d1_from$x, function(xi) {
-      sum(K((x - xi)/h) * Est$fw_bc_EM$gamma[, 2])/sum(h * Est$fw_bc_EM$gamma[, 2])
+      sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 2])/sum(h * Est$Em$fw_bc_EM$gamma[, 2])
     })
     f1x_from <- approx(d1_from$x, f1x_first, x_from)$y
     rm(f1x_first)
@@ -204,10 +214,10 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
   }
   else {
     f1x_from <- sapply(x_from, function(xi) {
-      sum(K((x - xi)/h) * Est$fw_bc_EM$gamma[, 2])/sum(h * Est$fw_bc_EM$gamma[, 2])
+      sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 2])/sum(h * Est$Em$fw_bc_EM$gamma[, 2])
     })
     f0x_from <- sapply(x_from, function(xi) {
-      sum(K((x - xi)/h) * Est$fw_bc_EM$gamma[, 1])/sum(h * Est$fw_bc_EM$gamma[, 1])
+      sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 1])/sum(h * Est$Em$fw_bc_EM$gamma[, 1])
     })
   }
   fw_bc_from <- for_back(m, A_est, f0x_from, f1x_from,
@@ -228,9 +238,9 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
            Borne_oracle_boot = map(Sel, ~get_probs(sel = .,
                                                    li0 = fw_bc_or_star$gamma[, 1], Pis = Pis_or_star,
                                                    f0x = f0x, f1x = f1x, prob)),
-           Borne_est_boot = map(Sel,   ~get_probs(sel = ., li0 = fw_bc_EM_star$gamma[, 1],
-                                                  Pis = Pis_est_star, f0x = f0x_est_star,
-                                                  f1x = f1x_est_star, prob)),
+           Borne_est_boot = map(Sel,   ~get_probs(sel = ., li0 = Est$Em$fw_bc_EM$gamma[, 1],
+                                                  Pis = Pis_est_star, f0x = Est$Em$f0x,
+                                                  f1x = Est$Em$f1x, prob)),
            V_HMM_oracle_boot = map_dbl(Borne_oracle_boot, ~.[6]),
            V_HMM_small_oracle_boot = map_dbl(Borne_oracle_boot, ~.[5]),
            V_HMM_oracle_boot_aldemi = map_dbl(Borne_oracle_boot, ~.[2]),
