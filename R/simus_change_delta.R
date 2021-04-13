@@ -117,6 +117,8 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
                          min_size, n, max_pi0, m0_init, sd0_init, df_init, norm_init,
                          type_init, approx, maxit=100,f0_known = TRUE,delta)
 {
+  Pi0 <- A_est[2,1] / (1 + A_est[2,1] - A_est[1,1])
+  Pi_est <- c(Pi0, 1- Pi0)
   Sel_from <- Sel_from %>% rename(Sel_from = Sel)
   m <- length(x_from)
   Data_temp <- sim_hmm_from_weightkde(A_est, Pi_est, x_from,
