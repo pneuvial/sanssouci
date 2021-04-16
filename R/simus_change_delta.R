@@ -115,7 +115,8 @@ Selection_delta <- function(x, fw_bc, seuil, A_est,
 #' delta = 0.9)
 boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
                          min_size, n, max_pi0, m0_init, sd0_init, df_init, norm_init,
-                         type_init, approx, maxit=100,f0_known = TRUE,delta)
+                         type_init, approx, maxit=100,f0_known = TRUE,delta,
+                         type_check = "closer_to0")
 {
   Pi0 <- A_est[2,1] / (1 + A_est[2,1] - A_est[1,1])
   Pi_est <- c(Pi0, 1- Pi0)
@@ -141,11 +142,16 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
   }
   if (norm_init) {
     f0x <- dnorm(x, m0_init, sd0_init)
-    f0x_from <- dnorm(x_from, m0_init, sd0_init)
+    if(f0_known){
+      f0x_from <- dnorm(x_from, m0_init, sd0_init)
+    }
+   
   }
   else {
     f0x <- dt(x, df_init)
+    if(f0_known){
     f0x_from <- dt(x_from, df_init)
+    }
   }
 
   if (approx) {
@@ -193,6 +199,18 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
   }else{
     pval_don = NULL
   }
+  if(!f0_known && type_check == "closer_to0" &&
+     abs(sum(x*Est$Em$f0x)) > abs(sum(x*Est$Em$f1x))){
+    Est$Em$A <- Est$Em$A[2:1,2:1]
+    Est$Em$Pi <-Est$Em$Pi[2:1,1]
+      f0x_est <- Est$Em$f1x
+      Est$Em$f1x <- Est$Em$f0x
+      Est$Em$f0x <- f0x_est
+      Est$Em$fw_bc_EM <- for_back(m, Est$Em$A ,Est$Em$f0x,
+                                  Est$Em$f1x, Est$Em$Pi)
+      rm(f0x_est)
+    gc()
+  }
   A_est <- Est$Em$A
   Pi_est <- Est$Em$Pi
   Sel <- Selection_delta(x, Est$Em$fw_bc_EM, seuil, A_est,
@@ -211,16 +229,25 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
       sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 2])/sum(h * Est$Em$fw_bc_EM$gamma[, 2])
     })
     f1x_from <- approx(d1_from$x, f1x_first, x_from)$y
+    if(!f0_known){
+      f0x_first <- sapply(d1_from$x, function(xi) {
+        sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 1])/sum(h * Est$Em$fw_bc_EM$gamma[, 1])
+      })
+      f0x_from <- approx(d1_from$x, f0x_first, x_from)$y 
+    }
+    
     rm(f1x_first)
+    rm(f0x_first)
     gc()
   }
   else {
     f1x_from <- sapply(x_from, function(xi) {
       sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 2])/sum(h * Est$Em$fw_bc_EM$gamma[, 2])
     })
+    if(! f0_known){
     f0x_from <- sapply(x_from, function(xi) {
       sum(K((x - xi)/h) * Est$Em$fw_bc_EM$gamma[, 1])/sum(h * Est$Em$fw_bc_EM$gamma[, 1])
-    })
+    })}
   }
   fw_bc_from <- for_back(m, A_est, f0x_from, f1x_from,
                          Pi_est)
@@ -468,6 +495,23 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
                           V_HMM_small_oracle_boot_aldemi,
                           V_HMM_est_boot_aldemi_samesel,
                           V_HMM_small_est_boot_aldemi_samesel,
+                          V_HMM_oracle_boot, V_HMM_small_oracle_boot,
+                          V_HMM_oracle_boot_al1_moins_delta,
+                          V_HMM_small_oracle_boot_al1_moins_delta,
+                          V_HMM_oracle_boot_aldelta,
+                          V_HMM_small_oracle_boot_aldelta,
+                          V_HMM_est_boot_aldelta,
+                          V_HMM_small_est_boot_aldelta,
+                          V_HMM_est_boot_al1_moins_delta,
+                          V_HMM_small_est_boot_al1_moins_delta,
+                          V_HMM_est_boot,
+                          V_HMM_small_est_boot,
+                          V_HMM_est_boot_aldelta_samesel,
+                          V_HMM_small_est_boot_aldelta_samesel,
+                          V_HMM_est_boot_al1_moins_delta_samesel,
+                          V_HMM_small_est_boot_al1_moins_delta_samesel,
+                          V_HMM_est_boot_samesel,
+                          V_HMM_small_est_boot_samesel,  
                           Espe,
                           Size,
                           Size_boot,
@@ -496,8 +540,8 @@ simu_delta <- function(m, A, Pi, n, rho, SNR, prob, type_sim = "HMM", al, s_dbnr
       V_HMM_or =  map_dbl(IC_or,~.[2]),
       V_HMM_est_aldemi =  map_dbl(Borne_est,~.[2]),
       V_HMM_small_est_aldemi =  map_dbl(Borne_est,~.[1]),
-      V_HMM_est_aldelta =  map_dbl(Borne_est,~.[7]),
-      V_HMM_small_est_aldelta =  map_dbl(Borne_est,~.[8]),
+      V_HMM_est_aldelta =  map_dbl(Borne_est,~.[8]),
+      V_HMM_small_est_aldelta =  map_dbl(Borne_est,~.[7]),
       V_HMM_est_al1_moins_delta =  map_dbl(Borne_est,~.[6]),
       V_HMM_small_est_al1_moins_delta =  map_dbl(Borne_est,~.[5]),
       V_HMM_small_est =  map_dbl(Borne_est,~.[3]),
