@@ -192,7 +192,7 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
                      m0_init, sd0_init, df_init, norm_init, max_pi0= max_pi0,
                      f0_known = f0_known, f0x_est = NULL, pval = NULL,
                      plot = FALSE, size_plot= min(10000, length(x)),
-                     approx = approx)
+                     approx = approx, maxit=maxit)
 
   if(f0_known){
     pval_don <- pval
