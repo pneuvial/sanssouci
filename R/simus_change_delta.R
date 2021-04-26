@@ -163,7 +163,7 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
     f1x <- approx(d1$x, f1x_first, x)$y
     rm(f1x_first)
     if(!f0_known){
-      f0x_first <- sapply(d0$x, function(xi) {
+      f0x_first <- sapply(d1$x, function(xi) {
         sum(K((x_from - xi)/h) * (1 - prob1))/sum(h * (1 -
                                                          prob1))
       })
