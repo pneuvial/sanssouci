@@ -28,14 +28,14 @@
 Em_tot_01_approx<- function(m, A, Pi, f0x, f1x,
    x, eps, maxit, h) {
  diff <- list(eps +1, eps +1,eps +1,eps +1)
-   i <- 0
+   i <- list(0)
   y <- as.list(rep(0,10))
   y[[6]] <- A
   y[[5]] <- list(gamma = matrix(Pi, nrow =1))
   y[[9]] <- f1x
   
   y[[10]] <- f0x
-  while(((max(unlist(diff)) > eps) & (i < maxit)))
+  while(((max(unlist(diff)) > eps) & (i[[1]] < maxit)))
   {
     
     y[[1]] <- y[[6]]
@@ -55,7 +55,7 @@ Em_tot_01_approx<- function(m, A, Pi, f0x, f1x,
     diff[[2]] = 0
     diff[[3]] = max(abs(y[[9]] - y[[4]]))
     diff[[4]] = max(abs(y[[10]] - y[[3]]))
-   i <- i+1
+    i[[1]] <- i[[1]]+1
    # gc()
   }
 
@@ -64,7 +64,7 @@ Em_tot_01_approx<- function(m, A, Pi, f0x, f1x,
                             fw_bc_EM= b_f,
                             f1x =  y[[9]],
                            f0x = y[[10]],
-                            i = i))
+                            i = i[[1]]))
 }
 
 
@@ -98,12 +98,12 @@ Em_tot_01_approx<- function(m, A, Pi, f0x, f1x,
 Em_tot_approx<- function(m, A, Pi, f0x, f1x,
                             x, eps, maxit, h) {
   diff <- list(eps +1, eps +1,eps +1)
-  i <- 0
+  i <- list(0)
   y <- as.list(rep(0,8))
   y[[6]] <- A
   y[[3]] <- Pi
   y[[8]] <- f1x
-  while(((max(unlist(diff)) > eps) & (i < maxit)))
+  while(((max(unlist(diff)) > eps) & (i[[1]] < maxit)))
   {
     # A_old = A
     # Pi_old = Pi
@@ -134,7 +134,7 @@ Em_tot_approx<- function(m, A, Pi, f0x, f1x,
     # diff[[2]] = max(abs(y[[3]] - y[[2]]))
     diff[[2]] = 0
     diff[[3]] = max(abs(y[[8]] - y[[4]]))
-    i <- i+1
+    i[[1]] <- i[[1]]+1
     # gc()
 
   }
@@ -144,6 +144,6 @@ Em_tot_approx<- function(m, A, Pi, f0x, f1x,
                fw_bc_EM= b_f,
                f1x = y[[8]],
                f0x = f0x,
-               i = i))
+               i = i[[1]]))
 }
 

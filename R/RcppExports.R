@@ -185,6 +185,38 @@ empiricalCoverageO <- function(thr, Z) {
 #' A <- matrix(1:9, 3, 3)
 #' B <- matrix(11:19, 3, 3)
 #' matrix_mult_cpp(A, B)
+get_A_old <- function(m, alpha, beta, A, f0x, f1x, i) {
+    .Call('_sansSouci_get_A_old', PACKAGE = 'sansSouci', m, alpha, beta, A, f0x, f1x, i)
+}
+
+#' Simple matrix multiplication
+#'
+#' @param m the number of positions (hypothesis)
+#' @param alpha a matrix m * 2  containing the forward variables
+#' @param beta a matrix m * 2  containing the backward variables
+#' @param A a matrix 2 * 2 the transition probabilities
+#' @param f0x a vector of the values of the density under the null hypothesis on the observations
+#' @param f1x a vector of the values of the density under the alternative hypothesis on the observations
+#' @param i the position (hypothesis) for wich we want the posterior transition matrix.
+#' @return Product of matrices
+#' @export
+#'
+#' @examples
+#' m <-  100
+#' A <- matrix(c(0.95, 0.05, 0.2, 0.80), 2, 2, byrow = T)
+#'   rdata <- sim_hmm_2states(m, Pi, A, f0 = c(0,1), f1= c(2,1))
+#'  x <- rdata$x
+#'  f0x <- dnorm(x)
+#'  f1x <- dnorm(x, 1,2)
+#'   mod <- for_back(m, A, f0x, f1x, Pi)
+#'     Pis_est <- lapply(2:m, function(i){
+#'  get_A( m,alpha = mod$alpha, beta = mod$beta, A, f0x, 
+#'         f1x, i = i)
+#'  })
+#' Pis_est2 <- lapply(2:m, function(i){
+#'  get_A_old( m,alpha = mod$alpha, beta = mod$beta, A, f0x, 
+#'         f1x, i = i)
+#'  })
 get_A <- function(m, alpha, beta, A, f0x, f1x, i) {
     .Call('_sansSouci_get_A', PACKAGE = 'sansSouci', m, alpha, beta, A, f0x, f1x, i)
 }

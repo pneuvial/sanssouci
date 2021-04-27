@@ -202,7 +202,7 @@ boots_delta <- function (A_est, Pi_est, x_from, prob1, h, Sel_from, al, seuil,
   if(!f0_known && type_check == "closer_to0" &&
      abs(sum(x*Est$Em$f0x)) > abs(sum(x*Est$Em$f1x))){
     Est$Em$A <- Est$Em$A[2:1,2:1]
-    Est$Em$Pi <-Est$Em$Pi[2:1,1]
+    Est$Em$Pi <-Est$Em$Pi[2:1]
       f0x_est <- Est$Em$f1x
       Est$Em$f1x <- Est$Em$f0x
       Est$Em$f0x <- f0x_est

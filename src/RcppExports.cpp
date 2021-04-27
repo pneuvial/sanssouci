@@ -119,6 +119,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_A_old
+arma::mat get_A_old(int m, arma::mat alpha, arma::mat beta, arma::mat A, arma::vec f0x, arma::vec f1x, int i);
+RcppExport SEXP _sansSouci_get_A_old(SEXP mSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP ASEXP, SEXP f0xSEXP, SEXP f1xSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type f0x(f0xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type f1x(f1xSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_A_old(m, alpha, beta, A, f0x, f1x, i));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_A
 arma::mat get_A(int m, arma::mat alpha, arma::mat beta, arma::mat A, arma::vec f0x, arma::vec f1x, int i);
 RcppExport SEXP _sansSouci_get_A(SEXP mSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP ASEXP, SEXP f0xSEXP, SEXP f1xSEXP, SEXP iSEXP) {
@@ -358,6 +375,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sansSouci_Em_tot_01", (DL_FUNC) &_sansSouci_Em_tot_01, 9},
     {"_sansSouci_colSort", (DL_FUNC) &_sansSouci_colSort, 1},
     {"_sansSouci_empiricalCoverageO", (DL_FUNC) &_sansSouci_empiricalCoverageO, 2},
+    {"_sansSouci_get_A_old", (DL_FUNC) &_sansSouci_get_A_old, 7},
     {"_sansSouci_get_A", (DL_FUNC) &_sansSouci_get_A, 7},
     {"_sansSouci_get_L1", (DL_FUNC) &_sansSouci_get_L1, 6},
     {"_sansSouci_getA01", (DL_FUNC) &_sansSouci_getA01, 5},
